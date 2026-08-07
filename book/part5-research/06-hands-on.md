@@ -74,7 +74,7 @@ reviews:
 
 ## 收尾
 
-匯出資格卡三個條件同時成立——判決 `PASS`、`export_ready_v1` 為 `true`、`entry_family` 落在可匯出白名單之內——5.4 已經講過，三處各自獨立寫。這裡要更正一個過時的地方：`review_strategy_drafts.py`、`orchestrate_edge_pipeline.py`、`design_strategy_drafts.py`、`synthesize_edge_concepts.py` 四支 script 的 `DEFAULT_EXPORTABLE_FAMILIES` 現在都是同一組四個值——`pivot_breakout`、`gap_up_continuation`、`panic_reversal`、`news_reaction`；`pipeline_flow.md`「Exportable Entry Families」那節還停在只列前兩個的舊版本，是文件沒跟上程式碼的一個例子，本章依實際讀過的常數核對後更正。三個條件全過，寫出來的也只是一份 `strategy.yaml` 加一份 `metadata.json`，不是一張券商訂單：離真正能被交易的策略，還要走第二部到第四部那整條篩選、部位計算、紀律閘門。跟第一部實作章那句「這是可重跑、可稽核的姿態，不是保證獲利的公式」一樣，這一章給出的也只是一份可重跑、可稽核的研究產出。從第一部 06:31 那道斷路器問「今天能不能做」，繞了四部到這裡問「這個觀察站不站得住」，答案照樣不是任何一支 script 替使用者做的決定。
+匯出資格卡三個條件同時成立——判決 `PASS`、`export_ready_v1` 為 `true`、`entry_family` 落在可匯出白名單之內——5.4 已經講過，三處各自獨立寫。這裡把前幾章各自揭露過的文件落差收攏核實一次：`review_strategy_drafts.py`、`orchestrate_edge_pipeline.py`、`design_strategy_drafts.py`、`synthesize_edge_concepts.py` 四支 script 的 `DEFAULT_EXPORTABLE_FAMILIES` 現在都是同一組四個值——`pivot_breakout`、`gap_up_continuation`、`panic_reversal`、`news_reaction`；`pipeline_flow.md`「Exportable Entry Families」那節還停在只列前兩個的舊版本，是文件沒跟上程式碼的一個例子，本章依實際讀過的常數再核對一次無誤。三個條件全過，寫出來的也只是一份 `strategy.yaml` 加一份 `metadata.json`，不是一張券商訂單：離真正能被交易的策略，還要走第二部到第四部那整條篩選、部位計算、紀律閘門。跟第一部實作章那句「這是可重跑、可稽核的姿態，不是保證獲利的公式」一樣，這一章給出的也只是一份可重跑、可稽核的研究產出。從第一部 06:31 的 `market-regime-daily` 問「今天能不能做」，繞了四部到這裡問「這個觀察站不站得住」，答案照樣不是任何一支 script 替使用者做的決定。
 
 ## 延伸閱讀
 

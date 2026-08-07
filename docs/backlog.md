@@ -12,7 +12,17 @@
 
 ## M4（第五部）前置
 
-- [ ] 序章 Mermaid 的 EDGE 虛線邊（改進後的 skills → swing-opportunity-daily）是本書詮釋——寫第五部時必須對照實際 pipeline 重新確認，並釐清 skill improvement loop 與 edge pipeline 的敘事順序
+- [x] 序章 Mermaid 的 EDGE 虛線邊（改進後的 skills → swing-opportunity-daily）是本書詮釋——寫第五部時必須對照實際 pipeline 重新確認，並釐清 skill improvement loop 與 edge pipeline 的敘事順序（解決：task-12 查核確認虛線邊語義成立，M4 最終審查 fix wave 已改正 EDGE 節點標籤與研究日散文的敘事順序）
+
+## M4 上游觀察（供回報上游）
+
+- [ ] `skills/signal-postmortem/SKILL.md` 第 36 行左右宣稱沒有 API key 時仍可用 `--exit-price`／`--exit-date` 手動記錄結果，但 `postmortem_recorder.py` 的手動路徑把 `realized_returns` 傳成空字典，`classify_outcome()` 讀到的 5 日報酬永遠是 0.0，手動記錄的 `outcome_category` 因此恆定判成 `NEUTRAL`，不會反映真實輸入的出場價
+- [ ] `skills/edge-hint-extractor/references/hints_schema.md` 的 Field Notes 寫 `preferred_entry_family` 只能是 `pivot_breakout` 或 `gap_up_continuation`（2 個），但同一個 skill 的 `build_hints.py` 的 `SUPPORTED_ENTRY_FAMILIES` 已經是 4 個（多了 `panic_reversal`、`news_reaction`），連腳本自己生成的範例 hint 都已經在用這兩個新值
+- [ ] `skills/edge-strategy-reviewer/references/review_criteria.md` 的 C7 `EXPORTABLE_FAMILIES` 仍寫兩個值，`review_strategy_drafts.py` 的 `DEFAULT_EXPORTABLE_FAMILIES` 已經是四個；另外 C1 的 fail 門檻文件寫「少於 5 個字」，程式碼實際是 `len(words) < 3`，C2／C3 的 pass 分數文件寫死 80，程式碼其實是連續分級（60、80、90 等級距），建議一併核對用語與門檻是否同步
+- [ ] `skills/edge-candidate-agent/references/research_ticket_schema.md`、`skills/edge-candidate-agent/references/signal_mapping.md`、`skills/edge-pipeline-orchestrator/references/pipeline_flow.md`、`skills/edge-pipeline-orchestrator/references/revision_loop_rules.md` 四份文件都還停在「只有 `pivot_breakout`、`gap_up_continuation` 兩個可匯出家族」的舊版本，`candidate_contract.py` 的 `SUPPORTED_ENTRY_FAMILIES` 與四支 script 的 `DEFAULT_EXPORTABLE_FAMILIES` 已經同步成四個
+- [ ] `scripts/run_skill_improvement_loop.py` 的 `_is_safe_dirty_tree()` docstring 有兩處與實作不符：（1）未追蹤檔（`??`）並非「一律擋下」，`state/` 底下放行；（2）tracked 變更並非只允許 `reports/`／`logs/`，`_SAFE_DIRTY_PREFIXES` 還含 `state/`
+- [ ] `skills/signal-postmortem/references/feedback-integration.md` 宣稱「skill improvement loop reads backlog entries」，但 `scripts/run_skill_improvement_loop.py` 全文搜尋 `backlog` 是 0 處引用，這條回饋路徑目前只是文件承諾、程式未接
+- [ ] `trade-performance-coach` 的 behavior tag 清單在三處文件不一致：`SKILL.md`（及其自動生成的 `docs/en/skills/trade-performance-coach.md`）列 9 個，`references/behavior-tags.md` 列 10 個（多 `unknown_size_discipline`），`assets/performance_coach_report.schema.json` 的 enum 列 11 個（再多一個 `loss_aversion`，前兩處文件都沒提到它）
 
 ## 工具強化（下次動到腳本時）
 

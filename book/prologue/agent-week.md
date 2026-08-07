@@ -116,7 +116,7 @@ Agent 交出去的是一份 `GO` 或一份 `NO-GO`，外加一整套可稽核的
 
 `skill_improvement_backlog` 是整套系統裡唯一一條從交易迴圈通往工具本身的線。
 
-順著它走下去，就是第五部的地界：從觀察與異常出發，抽出假說，合成 edge 概念，寫成策略草稿，再送進審查與否證——過了才輸出，沒過就打回修，改兩輪還不行就結案。整條管線可以由 `edge-pipeline-orchestrator` 一口氣跑完。再往外一層，還有一組每天自動評分、改進並開 PR 的迴圈，改的正是這本書從頭到尾在描述的那些 skills。
+順著它走下去，就是第五部的地界。這份清單被宣告的收件人只有一個：一組每天自動替 skills 評分、改進並開 PR 的迴圈——改的正是這本書從頭到尾在描述的那些工具。而第五部同一塊地界上還並排著另一條線：從觀察與異常出發，抽出假說，合成 edge 概念，寫成策略草稿，再送進審查與否證——過了才輸出，沒過就打回修，改兩輪還不行就結案；整條管線可以由 `edge-pipeline-orchestrator` 一口氣跑完。
 
 換句話說，這本書描述的 Agent，正在每天自動改進這本書描述的工具。細節留給第五部；序章只需要你記得這條線存在——它是這一週的迴圈真正閉合的地方。
 
@@ -143,7 +143,7 @@ flowchart TD
     KDW["kanchi-dividend-weekly<br/>週末：存股候選盡調"]
     TML["trade-memory-loop<br/>第四部：平倉之後學什麼？"]
     MPR["monthly-performance-review<br/>第四部：月度收斂"]
-    EDGE["edge pipeline<br/>第五部：Agent 如何進化？"]
+    EDGE["edge pipeline + skill improvement loop<br/>第五部：Agent 如何進化？"]
 
     MRD -->|exposure_decision| SOD
     SOD -->|pre_trade_discipline_decision = GO| HUMAN
