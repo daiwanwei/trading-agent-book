@@ -20,11 +20,11 @@ COT Index 極端值本身還要看「有多少人」撐著它。`shapiro-methodo
 
 第 2 步 `news-reaction-failure-analyzer` 跟第 3 步 `technical-analyst`（Shapiro 模式）不是接力棒，兩者都直接吃第 1 步的 `cot_crowding_report`，各自獨立跑——`gate-decision-table.md` 甚至專門留了一條分支處理「價格行為先於新聞判定跑完」的情況，不視為錯誤用法。第 2 步要驗證的是：擁擠方向本該受益的新聞出來了，價格卻沒有照劇本反應。早期設計曾經用「反應事件不到一半就判定失敗」這種比例規則——但在純雜訊底下，單一事件約有 69% 機率不會如預期反應，這條比例規則會在隨機雜訊裡誤判成立 48% 到 83% 之間，統計上毫無意義。現在的算法改用 `drift_stat = sqrt(n) * mean(方向調整後的 zscore_3d)`（`n` 是事件群集數，3 個交易日內重疊的事件先合併成一群，避免重複計分），`CONFIRMED` 需要同時滿足 `drift_stat <= -1.45` 且 `responded_ratio <= 0.25`——1.45 這個門檻是拿 1.0、1.28、1.35 逐一比對淘汰出來的，每個樣本數都經至少 5 萬次蒙地卡羅試驗驗證：純雜訊下誤判成立率壓在 8% 以內（實測 7.28%–7.30%），加入殘留自相關（AR(1)，ρ=0.1）後仍壓在 10% 以內（實測最高 9.00%）；刻意拉到 ρ=0.3 的壓力情境下誤判率會升到約 13.11%，文件把這個數字列為「僅供參考」而非硬性門檻，並提供 `--drift-z 1.75` 作為想要更保守 margin 的退路。
 
-第 3 步的判讀方式，ch3.2 已經拆過 `technical-analyst` 的雙模式分工，這裡不重複。第 4 步 `contrarian-setup-gate` 是整條管線唯一的收斂點，完全離線，不呼叫任何 API，只做驗證跟精確度排序：三個輸入依 crowding → news → price-action 的順序**依序**判定，前一步一旦拍板，後面步驟連檔案都不會被打開來看。這個「嚴格依序」是第 4 版才定案的：早一版曾經把兩個下游步驟當一組同時掃描，結果讓後一步的檔案損毀反過來軟化了前一步已經拍板的拒絕結論——現在改成任何一步先確定下來，後面的步驟連檔案都不會打開。輸出的 `setup_status` 只有五種：`READY_FOR_PLAN`（三步全部確認）、`WATCHING_PRICE`（擁擠與新聞都確認，價格行為待驗證）、`CROWDED`（只確認擁擠）、`REJECTED`、`INSUFFICIENT_EVIDENCE`。一個真實跑出來的例子：英鎊（B6）曾被判 `CROWDED_SHORT`（COT Index 三年值 7.2），但新聞驗證回傳 `NOT_CONFIRMED`——價格行為報告根本沒被打開來看，`setup_status` 直接落在 `REJECTED`。只有 `READY_FOR_PLAN` 才保證 `entry_trigger` 是非空字串、`invalidation_level` 是有限正數——這道保證被雙重檢查過一次，一次在正規化邏輯裡，一次在輸出前的斷言。
+第 3 步的判讀方式，3.2 節已經拆過 `technical-analyst` 的雙模式分工，這裡不重複。第 4 步 `contrarian-setup-gate` 是整條管線唯一的收斂點，完全離線，不呼叫任何 API，只做驗證跟精確度排序：三個輸入依 crowding → news → price-action 的順序**依序**判定，前一步一旦拍板，後面步驟連檔案都不會被打開來看。這個「嚴格依序」是第 4 版才定案的：早一版曾經把兩個下游步驟當一組同時掃描，結果讓後一步的檔案損毀反過來軟化了前一步已經拍板的拒絕結論——現在改成任何一步先確定下來，後面的步驟連檔案都不會打開。輸出的 `setup_status` 只有五種：`READY_FOR_PLAN`（三步全部確認）、`WATCHING_PRICE`（擁擠與新聞都確認，價格行為待驗證）、`CROWDED`（只確認擁擠）、`REJECTED`、`INSUFFICIENT_EVIDENCE`。一個真實跑出來的例子：英鎊（B6）曾被判 `CROWDED_SHORT`（COT Index 三年值 7.2），但新聞驗證回傳 `NOT_CONFIRMED`——價格行為報告根本沒被打開來看，`setup_status` 直接落在 `REJECTED`。只有 `READY_FOR_PLAN` 才保證 `entry_trigger` 是非空字串、`invalidation_level` 是有限正數——這道保證被雙重檢查過一次，一次在正規化邏輯裡，一次在輸出前的斷言。
 
 ```mermaid
 flowchart TD
-    CCD["cot-contrarian-detector<br/>決策閘：混雜度篩選"]
+    CCD["cot-contrarian-detector<br/>決策閘：擁擠度篩選"]
     NRF["news-reaction-failure-analyzer<br/>決策閘：新聞失敗驗證"]
     TA["technical-analyst（Shapiro 模式）<br/>決策閘：週線反轉確認"]
     CSG["contrarian-setup-gate<br/>決策閘：管線收斂"]
@@ -37,7 +37,7 @@ flowchart TD
 
 這條管線自己就帶著一個決策中樞——跟 `swing-opportunity-daily` 在第 7 步靠 `technical-analyst` 收斂候選、第 10 步靠 `trader-memory-core` 登記論點是同一種結構，只是這裡把「收斂」跟「驗證」揉進同一個獨立 skill 裡。這不是繞過第三部講的紀律，是紀律在另一種資產類別上的同構實例。
 
-只有 `READY_FOR_PLAN` 才往下走。Shapiro 原著五步裡，「進場」排在第四位——ch3.1 在這個編號下已經拆過 `futures-position-sizer` 怎麼把方向與失效價換算成合約口數，這裡不重講；但這套自動化管線自己的 YAML 步驟編號把它排在第 5 步，因為原著沒有的角色 `contrarian-setup-gate` 佔走了第 4 步的位置。最後一步交給 `trader-memory-core`：只登記 `sizing_status` 是 `SIZED` 的候選（`NO_TRADE` 一律不登記），順序寫死——先建 `IDEA` 論點，再用 `attach-futures-position` 把口數、方向、乘數附加上去，接著把四份上游報告（`cot_crowding_report`、`news_failure_verdict`、`price_action_confirmation_report`、`contrarian_setup_gate_report`）逐一用 `link_report()` 掛上去，證據鏈才算完整；狀態機最多停在 `IDEA` 或 `ENTRY_READY`，只有券商真的成交，才能轉 `ACTIVE`。
+只有 `READY_FOR_PLAN` 才往下走。Shapiro 原著五步裡，「進場」排在第四位——3.1 節在這個編號下已經拆過 `futures-position-sizer` 怎麼把方向與失效價換算成合約口數，這裡不重講；但這套自動化管線自己的 YAML 步驟編號把它排在第 5 步，因為原著沒有的角色 `contrarian-setup-gate` 佔走了第 4 步的位置。最後一步交給 `trader-memory-core`：只登記 `sizing_status` 是 `SIZED` 的候選（`NO_TRADE` 一律不登記），順序寫死——先建 `IDEA` 論點，再用 `attach-futures-position` 把口數、方向、乘數附加上去，接著把四份上游報告（`cot_crowding_report`、`news_failure_verdict`、`price_action_confirmation_report`、`contrarian_setup_gate_report`）逐一用 `link_report()` 掛上去，證據鏈才算完整；狀態機最多停在 `IDEA` 或 `ENTRY_READY`，只有券商真的成交，才能轉 `ACTIVE`。
 
 ## 判讀與誤用
 

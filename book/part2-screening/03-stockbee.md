@@ -8,7 +8,7 @@
 
 ## 方法論
 
-三份 methodology 文件都把方法歸給同一個人。三份 SKILL.md 的 description 都用「Stockbee-style」稱呼這套語彙；momentum burst 與 exhaustion hammer 的 description 更進一步點名 `Pradeep Bonde`，EP 的 description 沒有點名，這個名字要到本文「When to Use」清單才出現。**原著 vs 實作。**跟 2.1、2.2 不一樣的地方要先說清楚：VCP 的 `minervini_entry_rules.md` 列了 Minervini 兩本書當 Sources，CANSLIM 的 SKILL.md 明講計分系統「Adapted from IBD MarketSmith proprietary system」；這三支 Stockbee skill 的九份參考文件裡，沒有一份給出書名、文章或訪談出處，方法只以「Stockbee-style」「Pradeep Bonde」帶過，沒有更進一步的引用鏈——這裡沒有一本可具名的原著能拿來對照實作，唯一能驗證的落差，是方法論散文跟計分系統之間的落差，見下段 exhaustion hammer 的討論。
+三份 methodology 文件都把方法歸給同一個人。三份 SKILL.md 的 description 都用「Stockbee-style」稱呼這套語彙；momentum burst 與 exhaustion hammer 的 description 更進一步點名 `Pradeep Bonde`，EP 的 description 沒有點名，這個名字要到本文「When to Use」清單才出現。**原著 vs 實作。** 跟 2.1、2.2 不一樣的地方要先說清楚：VCP 的 `minervini_entry_rules.md` 列了 Minervini 兩本書當 Sources，CANSLIM 的 SKILL.md 明講計分系統「Adapted from IBD MarketSmith proprietary system」；這三支 Stockbee skill 的九份參考文件裡，沒有一份給出書名、文章或訪談出處，方法只以「Stockbee-style」「Pradeep Bonde」帶過，沒有更進一步的引用鏈——這裡沒有一本可具名的原著能拿來對照實作，唯一能驗證的落差，是方法論散文跟計分系統之間的落差，見下段 exhaustion hammer 的討論。
 
 `momentum_burst_methodology.md` 把核心假設寫成一句話：某些股票在一段區間收縮之後會炸出短而急的動能，真正有用的漲幅常發生在接下來幾個交易日，而非一段長期趨勢。它定義三種觸發家族：4% 突破——收盤價至少比前一日收盤高 4%，當日量高於前一日、且高於流動性下限；金額突破——收盤價減開盤價至少達到設定門檻，預設 $0.90，適合股價較高、百分比漲幅不到 4% 但金額本身有意義的股票；區間擴張——當日振幅大於前三個交易日的每一天，前一日振幅還沒被拉開，且量能確認這次擴張。
 

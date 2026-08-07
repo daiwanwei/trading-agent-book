@@ -2,9 +2,9 @@
 
 ## 場景
 
-前五節的偵查隊，不管必跑還是可選，都掛在同一張日曆上——每個交易日早上都能跑一遍。這一節的四支隊伍不一樣：它們的機會窗跟流派無關，跟財報季的日曆有關。有公司公告財報的那幾天，才有東西可篩；沒有，篩子就是空的。
+前五節的偵查隊，不管必跑還是可選，都掛在規律的節奏上——有的每個交易日早上跑一遍，有的固定在每週某一天跑一遍。這一節的四支隊伍不一樣：它們的機會窗跟固定節奏無關，是被事件觸發——有公司公告財報，或者股價走到某種極端行為的時候，才有東西可篩；平常時候，篩子就是空的。
 
-這也是為什麼它們在整個系統裡的掛法，跟 2.1–2.5 的主力偵查隊不一樣。`theme-detector` 是唯一一個在 `swing-opportunity-daily.yaml` 裡有自己編號步驟的：第 6 步，`optional: true`，`produces: theme_candidates`——README 開場已經點過它的定位：不是獨立主力，是替前面幾支隊伍的候選再多加一層篩子的衛星。`earnings-trade-analyzer` 在 `stockbee-ep-daily.yaml` 裡也有編號位置——第 2 步，同樣 `optional: true`，`produces: earnings_candidates`；但 `pead-screener` 只出現在這份 YAML 開頭的 `optional_skills` 清單裡，沒有自己的編號步驟——它接的是第 4 步 `stockbee-episodic-pivot-analyzer` 產出的 `pead_handoff_candidates`，這條線 `downstream_hints` 標明指向 `swing-opportunity-daily`。2.3 節留了一句伏筆：財報型 EP 若 Day 1 漲幅太強、追價已不划算，`pead_handoff=true` 時就送進 `pead-screener` 做一到五週的紅 K 監控——這裡接手。第四支，`parabolic-short-trade-planner`，在 `skills-index.yaml` 裡 `workflows` 欄位是空的，翻遍現有的 workflow YAML 也找不到它的名字——它不掛在任何一條每日或每週的管線上，只能單獨呼叫。四支隊伍，四種掛法，共通點只有一個：都是被財報或極端價格行為觸發的事件驅動衛星，不是天天巡邏的主力。
+這也是為什麼它們在整個系統裡的掛法，跟 2.1–2.5 節的主力偵查隊不一樣。`theme-detector` 是唯一一個在 `swing-opportunity-daily.yaml` 裡有自己編號步驟的：第 6 步，`optional: true`，`produces: theme_candidates`——README 開場已經點過它的定位：不是獨立主力，是替前面幾支隊伍的候選再多加一層篩子的衛星。`earnings-trade-analyzer` 在 `stockbee-ep-daily.yaml` 裡也有編號位置——第 2 步，同樣 `optional: true`，`produces: earnings_candidates`；但 `pead-screener` 只出現在這份 YAML 開頭的 `optional_skills` 清單裡，沒有自己的編號步驟——它接的是第 4 步 `stockbee-episodic-pivot-analyzer` 產出的 `pead_handoff_candidates`，這條線 `downstream_hints` 標明指向 `swing-opportunity-daily`。2.3 節留了一句伏筆：財報型 EP 若 Day 1 漲幅太強、追價已不划算，`pead_handoff=true` 時就送進 `pead-screener` 做一到五週的紅 K 監控——這裡接手。第四支，`parabolic-short-trade-planner`，在 `skills-index.yaml` 裡 `workflows` 欄位是空的，翻遍現有的 workflow YAML 也找不到它的名字——它不掛在任何一條每日或每週的管線上，只能單獨呼叫。四支隊伍，四種掛法，共通點只有一個：都是被財報或極端價格行為觸發的事件驅動衛星，不是天天巡邏的主力。
 
 ## 方法論
 

@@ -2,7 +2,7 @@
 
 ## 場景
 
-07:35，第一部的兩道閘都亮了燈（1.5 節；帳戶端的斷路器，第三部會細講），市場准了、帳戶也准了。`swing-opportunity-daily.yaml` 接手之後，第 2 步立刻被叫起來——五個偵查步驟裡，這是唯一標成必跑、不是 `optional: true` 的一個。`skill: vcp-screener`，`decision_gate: false`，`produces: vcp_candidates`。它不問「今天能不能冒風險」，那個問題第 1 步的斷路器已經問過；它問的是更窄、更具體的一件事：這一批 S&P 500 成分股裡，誰正壓縮到臨界點，隨時可能突破。
+07:35，開場那兩道閘都亮了燈（1.5 節；帳戶端的斷路器，第三部會細講），市場准了、帳戶也准了。`swing-opportunity-daily.yaml` 接手之後，第 2 步立刻被叫起來——五個偵查步驟裡，這是唯一標成必跑、不是 `optional: true` 的一個。`skill: vcp-screener`，`decision_gate: false`，`produces: vcp_candidates`。它不問「今天能不能冒風險」，那個問題第 1 步的斷路器已經問過；它問的是更窄、更具體的一件事：這一批 S&P 500 成分股裡，誰正壓縮到臨界點，隨時可能突破。
 
 預設跑法很直接：`screen_vcp.py` 抓 S&P 500 前 100 名候選，靠 FMP 的日線 OHLCV 完成整套判斷；免費額度（250 次呼叫/日）就夠用，想篩滿整個 S&P 500（`--full-sp500`）才需要付費層級。跑完之後，`reports/` 下多出一份 JSON 跟一份 Markdown，`vcp_candidates` 就是這份 JSON。第 3 到 6 步的其他篩子——Stockbee 動能爆發、Stockbee 衰竭反手、CANSLIM、主題偵測——各自平行跑，誰跳過都不影響這一步；但第 7 步週線驗證要看的候選清單裡，`vcp_candidates` 是唯一保證存在的一份。
 
