@@ -20,6 +20,13 @@ python3 scripts/check_book.py --upstream ~/Projects/wade/math/claude-trading-ski
 
 生成頁開頭有 `<!-- generated: true -->` 標記，請勿手動編輯。
 
+## 進度
+
+| 部分 | 狀態 |
+|---|---|
+| 序章 + 第一部 | ✅ 已完成 |
+| 第三部（M2）→ 第二部（M3）→ 第四、五部（M4）→ 附錄 C/D（M5） | 🚧 依序進行中 |
+
 ## 本書立場
 
 本書與上游專案相同：所有工具輸出是**姿態不是訊號**，不提供投資建議，不自動下單。
