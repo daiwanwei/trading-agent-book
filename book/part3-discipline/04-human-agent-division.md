@@ -6,7 +6,7 @@
 
 Agent 做的事,說到底都是同一件事的不同版本:把資訊變成一個可稽核的判斷。1.5 節的 `exposure-coach` 讀廣度、上升趨勢參與度、頂部風險三份報告,收斂成一句 `allow`／`restrict`／`cash-priority`;3.1 節的 `position-sizer` 把「願意虧多少」換算成股數;3.3 節的斷路器讀 thesis YAML,算出 `TRADING_ALLOWED`／`COOLDOWN`／`HALTED`;`pre-trade-discipline-gate` 把六項檢查收斂成 `GO`／`NO_ACTIONABLE_ORDERS`／`REVIEW_REQUIRED`／`NO_GO`。全部都是計算:讀資料、套規則、輸出一個明確值,換一組輸入就能重跑一次拿到同一個答案。
 
-這件事在 workflow 裡有一個共用的標記。用 grep 掃過全部 `workflows/*.yaml`,`decision_gate: true` 一共出現 19 次,分布在全部 11 條 workflow——每一條至少一個,最多的 `shapiro-contrarian.yaml` 與 `stockbee-ep-daily.yaml` 各有 5 個。上游 schema(`docs/dev/metadata-and-workflow-schema.md` 的校驗規則 `WF005`)對這個標記只要求一件事:必須帶一句非空的 `decision_question`。也就是說,`decision_gate: true` 保證的是「這一步問了一個明確的問題」,不保證「這一步的答案已經被誰確認過」。
+這件事在 workflow 裡有一個共用的標記。用 grep 掃過全部 `workflows/*.yaml`,`decision_gate: true` 一共出現 30 次,分布在全部 11 條 workflow——每一條至少一個,最多的 `shapiro-contrarian.yaml` 與 `stockbee-ep-daily.yaml` 各有 5 個。上游 schema(`docs/dev/metadata-and-workflow-schema.md` 的校驗規則 `WF005`)對這個標記只要求一件事:必須帶一句非空的 `decision_question`。也就是說,`decision_gate: true` 保證的是「這一步問了一個明確的問題」,不保證「這一步的答案已經被誰確認過」。
 
 這正是這一節要說清楚的分界線:`decision_gate: true` 是 Agent 停下來、把問題攤開的地方——不是 Agent 自己拍板決定的地方。斷路器算出 `HALTED`,那是計算結果;接下來要不要真的暫停交易,是另一件事。
 
@@ -14,7 +14,7 @@ Agent 做的事,說到底都是同一件事的不同版本:把資訊變成一個
 
 Agent 停下來之後,人要做兩件事:讀懂那個 verdict,以及做那個 verdict 換不來的動作——下單。
 
-先看 verdict 這一半。每一個 `decision_gate: true` 步驟最終要有人看過、認可,而不是讓輸出直接流向下一步——`market-regime-daily.yaml` 的 `manual_review` 第一條就是「確認輸出不是拿來當買賣訊號」;`swing-opportunity-daily.yaml` 第 7 步的 `manual_review` 明講「篩選器通過但週線不明確者一律否決」;`kanchi-dividend-weekly.yaml` 第六步的 `decision_question` 寫死論點在真正成交之前不得轉為 `ACTIVE`。這些都不是驗證器能自己核對的事——沒有任何程式會去確認交易者真的讀過那張圖、真的接受了那個 `restrict` 姿態。
+先看 verdict 這一半。每一個 `decision_gate: true` 步驟最終要有人看過、認可,而不是讓輸出直接流向下一步——`market-regime-daily.yaml` 的 `manual_review` 第一條就是「確認輸出不是拿來當買賣訊號」;`swing-opportunity-daily.yaml` workflow 層級的 `manual_review` 清單裡有一條對應第 7 步的檢查:「篩選器通過但週線不明確者一律否決」;`kanchi-dividend-weekly.yaml` 第六步的 `decision_question` 寫死論點在真正成交之前不得轉為 `ACTIVE`。這些都不是驗證器能自己核對的事——沒有任何程式會去確認交易者真的讀過那張圖、真的接受了那個 `restrict` 姿態。
 
 再看下單這一半,這是整套系統裡唯一「不可轉讓」的動作。用 grep 掃過全部 `workflows/*.yaml`,逐字寫著「no auto-execution／placed manually」的只有 3 條——`stockbee-ep-daily.yaml`、`swing-opportunity-daily.yaml`、`shapiro-contrarian.yaml`,同一句話:「All orders are placed manually at the broker; no auto-execution.」另外兩條走到下單這一步的 workflow 用了不同措辭、同一個意思——`core-portfolio-weekly.yaml` 的 `manual_review` 要求「確認再平衡的單是在券商手動輸入,不是自動執行」;`kanchi-dividend-weekly.yaml` 兩處寫著「每一筆買進都在券商手動輸入」。11 條 workflow 裡,真正走到「下單」這一步的是這 5 條,沒有一條讓 Agent 碰到券商 API。其餘 6 條——`market-regime-daily`、`monthly-performance-review`、`multi-asset-opportunity-daily`、`stockbee-20pct-study-daily`、`stockbee-fluency-loop`、`trade-memory-loop`——本來就停在姿態、假說或事後檢討,不涉及新單,通篇也找不到「order」這個字。
 
@@ -24,7 +24,7 @@ Agent 停下來之後,人要做兩件事:讀懂那個 verdict,以及做那個 ve
 
 這條分工線不是技術做不到自動化才退而求其次的妥協。上游確實有能連上券商 API 的 skill——`portfolio-manager` 走 Alpaca——但它只出現在週末的組合檢視流程裡,沒有被接到任何一條當日下單流程的末端。能做的事,選擇不做,才是設計。
 
-斷路器 SKILL.md 對自己的定位寫得很直接:「The circuit breaker is a recommendation and recordkeeping tool. It does not replace human judgment, and it does not enforce broker-side blocks or automated order rejection.」——一個算帳戶能不能再冒險的工具,明文拒絕替使用者做出「不准交易」這個決定,只負責把數字算清楚、把紀錄留下來。這句自我定位放大來看,就是整套系統對自己的定位:工具負責計算與記錄,不負責替人承擔那個決定。
+3.3 節引過斷路器 SKILL.md 對自己的定位——「a recommendation and recordkeeping tool」,明文拒絕替使用者做出「不准交易」這個決定,只負責把數字算清楚、把紀錄留下來。放到這一節看,這句自我描述不只是斷路器一個 skill 的定位,是整個分工哲學的縮影:工具負責計算與記錄,不負責替人承擔那個決定。
 
 把紀律外包給程式,看起來省事,代價是人會漸漸失去對規則本身的所有權——如果「不能超過 2% 風險」只是螢幕上一個擋住去路的紅字,而不是自己理解過、認同過的邊界,第一次遇到情緒夠強的行情,人只會想辦法繞過那個紅字,而不是遵守它。留一道人工確認,逼的是人每次都要重新面對「我真的同意這個判斷嗎」,而不是把責任交給一個永遠不會被追究的演算法。
 
