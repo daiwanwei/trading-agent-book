@@ -25,3 +25,11 @@
 
 - [ ] GitBook.com：建 space →GitHub Git Sync 綁 `daiwanwei/trading-agent-book`（main）→ root 由 .gitbook.yaml 讀取
 - [ ] 取得公開 URL 後回填 `README.md` 第 7 行
+
+## M3 最終審查 ride-along（併入 M5 校對）
+
+- [ ] 第二部 README：COT 首次出現可加（Commitment of Traders）展開；Kanchi 句逗號連綴可順
+- [ ] 2.1：可補 Alpaca 品牌標注；dry-up ratio 方法論/機制間可加一句橋
+- [ ] 2.1 與實作章：「S&P 500 前 100 名候選」措辭可更精確（全數抓取→預篩→截斷 100）
+- [ ] 2.4：「六到九成」混合了兩支 screener 的節省機制，可拆開表述
+- [ ] 序章：「說法一模一樣」→「開頭一模一樣」（與 2.3 的細分一致）
