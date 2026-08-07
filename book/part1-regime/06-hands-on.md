@@ -9,7 +9,7 @@
 **(a) 在 Claude Code 對話中觸發。** 不用記指令，用一句話描述今天想確認的事，Claude 會自己找到對應的 skill：
 - 「幫我看今天市場廣度健不健康」→ `market-breadth-analyzer`
 - 「上升趨勢的參與度廣不廣」→ `uptrend-analyzer`
-- 「天井是不是近了，要不要減碼」→ `market-top-detector`
+- 「頭部是不是近了，要不要減碼」→ `market-top-detector`
 - 「現在該把多少資本投入股票部位」→ `exposure-coach`
 
 **(b) 直接執行 script。** 下面 checklist 的四條指令，逐一對照四支 script 的 `--help` 輸出核對過旗標，在 repo 根目錄執行。兩種跑法背後執行的是同一支 script、算出同一份報告——差別只在於觸發的方式：對話式適合臨時起意的一次性提問，指令式適合排進 cron 或每天固定重跑的例行流程。
