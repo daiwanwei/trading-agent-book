@@ -1,0 +1,23 @@
+schema_version: 1
+id: demo-flow
+display_name: Demo Flow
+cadence: daily
+estimated_minutes: 10
+difficulty: beginner
+api_profile: no-api-basic
+when_to_run: Run before anything else.
+when_not_to_run: Do not use as a signal.
+required_skills:
+- alpha-skill
+optional_skills: []
+artifacts:
+- id: a_out
+  produced_by_step: 1
+  required: true
+steps:
+- step: 1
+  name: Run alpha
+  skill: alpha-skill
+  produces: [a_out]
+  decision_gate: true
+  decision_question: Is it fine?

@@ -1,0 +1,35 @@
+schema_version: 1
+categories:
+- market-regime
+- meta
+skills:
+- id: alpha-skill
+  display_name: Alpha Skill
+  category: market-regime
+  status: production
+  summary: Test summary alpha.
+  timeframe: daily
+  difficulty: beginner
+  integrations:
+  - id: fmp
+    type: market_data
+    requirement: required
+    note: FMP API
+  inputs: [a_in]
+  outputs: [a_out]
+  workflows: [demo-flow]
+- id: beta-skill
+  display_name: Beta Skill
+  category: meta
+  status: beta
+  summary: Test summary beta.
+  timeframe: research
+  difficulty: advanced
+  integrations:
+  - id: local_calculation
+    type: calculation
+    requirement: not_required
+    note: offline
+  inputs: [b_in]
+  outputs: [b_out]
+  workflows: []
