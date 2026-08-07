@@ -76,3 +76,40 @@ def render_skills_appendix(index: dict, upstream_commit: str) -> str:
                 f"| {skill.get('difficulty', '—')} | {_api_cell(skill)} |"
             )
     return "\n".join(lines) + "\n"
+
+
+def render_workflows_appendix(workflows: list, upstream_commit: str) -> str:
+    lines = [
+        "<!-- generated: true -->",
+        f"<!-- source: tradermonty/claude-trading-skills@{upstream_commit} -->",
+        "# 附錄 B：Workflows 對照表",
+        "",
+        f"共 {len(workflows)} 條 workflow。"
+        "本頁由 `scripts/generate_appendix.py` 自動生成，請勿手動編輯。",
+    ]
+    for wf in workflows:
+        lines += ["", f"## {wf['display_name']}（`{wf['id']}`）", ""]
+        lines.append(
+            f"- 節奏：{wf.get('cadence', '—')}｜預估 {wf.get('estimated_minutes', '—')} 分鐘"
+            f"｜難度：{wf.get('difficulty', '—')}｜API profile：{wf.get('api_profile', '—')}"
+        )
+        if wf.get("when_to_run"):
+            lines.append(f"- 何時執行：{' '.join(str(wf['when_to_run']).split())}")
+        if wf.get("when_not_to_run"):
+            lines.append(f"- 何時不執行：{' '.join(str(wf['when_not_to_run']).split())}")
+        required = "、".join(f"`{s}`" for s in wf.get("required_skills", []))
+        optional = "、".join(f"`{s}`" for s in wf.get("optional_skills", []))
+        lines.append(f"- 必要 skills：{required or '—'}")
+        if optional:
+            lines.append(f"- 可選 skills：{optional}")
+        for pre in wf.get("prerequisite_workflows", []):
+            lines.append(f"- 前置 workflow：`{pre['id']}`（需要 artifact `{pre['artifact']}`）")
+        lines += ["", "| # | 步驟 | Skill | 決策閘 |", "|---|---|---|---|"]
+        for step in wf.get("steps", []):
+            gate = "✅" if step.get("decision_gate") else ""
+            opt_mark = "（可選）" if step.get("optional") else ""
+            lines.append(
+                f"| {step['step']} | {step['name']}{opt_mark} "
+                f"| `{step.get('skill', '—')}` | {gate} |"
+            )
+    return "\n".join(lines) + "\n"

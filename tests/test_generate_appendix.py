@@ -8,6 +8,7 @@ from generate_appendix import (
     load_workflows,
     get_upstream_commit,
     render_skills_appendix,
+    render_workflows_appendix,
 )
 
 FIXTURE = Path(__file__).parent / "fixtures" / "upstream"
@@ -44,3 +45,14 @@ def test_render_skills_appendix():
     # beta-skill 只有 not_required integration → API 欄為 —
     beta_row = [l for l in out.splitlines() if "Beta Skill" in l][0]
     assert "| — |" in beta_row
+
+
+def test_render_workflows_appendix():
+    flows = load_workflows(FIXTURE)
+    out = render_workflows_appendix(flows, "abc1234")
+    assert out.startswith("<!-- generated: true -->")
+    assert "## Demo Flow（`demo-flow`）" in out
+    assert "節奏：daily" in out
+    assert "何時不執行：Do not use as a signal." in out
+    assert "`alpha-skill`" in out
+    assert "| 1 | Run alpha | `alpha-skill` | ✅ |" in out
