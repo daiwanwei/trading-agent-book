@@ -49,7 +49,7 @@ python3 skills/theme-detector/scripts/theme_detector.py --output-dir reports/
 
 ## 前置需求
 
-Step 2、3、4、5 都需要 `FMP_API_KEY`——VCP 與 CANSLIM 沒有離線路徑，跳過就等於整步不跑；`stockbee-momentum-burst-screener` 與 `stockbee-exhaustion-hammer-screener` 各留了一條 `--prices-json` 離線路徑，餵進本地 OHLCV JSON 就能繞過 FMP，但預設的 `--fmp-universe` 全市場掃描仍然要靠這把 key。Step 6 的 `theme-detector` 是全章唯一不吃 FMP 的一步：FINVIZ Elite（`FINVIZ_API_KEY`）只是 optional 但建議設定的加速選項——沒有它就退回 Public 爬蟲模式，一樣能跑完；FMP 在這裡也只是 optional，只用來補 P/E 估值資料算 Lifecycle 的 Valuation 分量，沒有就退回 FINVIZ 自己的預估本益比。五支 script 都會自己建立 `--output-dir` 指定的資料夾，不用預先 `mkdir`。
+Step 2、3、4、5 都需要 `FMP_API_KEY`——VCP 與 CANSLIM 沒有離線路徑，跳過就等於整步不跑；`stockbee-momentum-burst-screener` 與 `stockbee-exhaustion-hammer-screener` 各留了一條 `--prices-json` 離線路徑，餵進本地 OHLCV JSON 就能繞過 FMP，但預設的 `--fmp-universe` 全市場掃描仍然要靠這把 key。Step 6 的 `theme-detector` 是全章唯一不吃 FMP 的一步：FINVIZ Elite（`FINVIZ_API_KEY`）只是 optional 但建議設定的加速選項——沒有它就退回 Public 爬蟲模式，一樣能跑完；FMP 在這裡也只是 optional，只用來補 P/E 估值資料算 Lifecycle 的 Valuation 分量，沒有就退回 yfinance 的 `trailingPE`——換了一個資料源，更新時效跟著不一樣，不是同一份資料的兩種讀法。五支 script 都會自己建立 `--output-dir` 指定的資料夾，不用預先 `mkdir`。
 
 ## 產出解讀
 
@@ -70,7 +70,7 @@ Step 2、3、4、5 都需要 `FMP_API_KEY`——VCP 與 CANSLIM 沒有離線路�
 
 ## 收尾
 
-候選離開這一章之後，走的是第三部實作章那六步：第 7 步的圖表決策閘先淘汰週線結構不乾淨的候選，第 8 步算部位大小，第 9 步（optional）產進場計畫，第 10 步登記論點，第 11 步的紀律閘門在下單前做最後一次六項檢查。五支偵查隊在這裡吐出再多候選，沒有一個能跳過那六步直接變成一張券商訂單。
+候選離開這一章之後，走的是第三部實作章六步裡剩下的五步——第 1 步的斷路器，本章開場就已經回過 `TRADING_ALLOWED`，不用再過一次：第 7 步的圖表決策閘先淘汰週線結構不乾淨的候選，第 8 步算部位大小，第 9 步（optional）產進場計畫，第 10 步登記論點，第 11 步的紀律閘門在下單前做最後一次六項檢查。五支偵查隊在這裡吐出再多候選，沒有一個能跳過這五步直接變成一張券商訂單。
 
 跟前面兩部立的場一樣：這一章給出的是可重跑、可稽核的候選清單，不是選股建議，更不是買進訊號。`vcp_candidates` 是唯一保證存在的那一份，其餘四份跳過也不影響流程——但不管跑了幾份，決定權從來不在分數，在第三部那道人工複核的閘。
 
