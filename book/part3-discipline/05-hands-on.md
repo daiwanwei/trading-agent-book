@@ -79,11 +79,11 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 
 ## 前置需求
 
-這一段大多離線可跑：斷路器、部位計算、紀律閘門讀的都是本地 `state/theses/` 或 CLI 參數,不碰任何付費 API。需要 `FMP_API_KEY` 的只有 Step 7 的 script 備援——而它本來就不是這一步的主路徑,跳過不影響其餘五步。`state/theses/` 不用預先手動建立:`trader-memory-core` 的寫入操作(`ingest`、`open-position` 等)與 `check_circuit_breaker.py`、`check_pre_trade_discipline.py` 的 `--output-dir`/`--journal-dir` 都會自己 `mkdir(parents=True, exist_ok=True)`。唯一要注意的是紀律閘門的 `--state-dir` 本身沒有預設值——不傳就等於沒有本地論點可讀,近期虧損(revenge window)檢查會靜靜地找不到任何紀錄,不是報錯,但也等於沒真的查過。
+這一段大多離線可跑：斷路器、部位計算、紀律閘門讀的都是本地 `state/theses/` 或 CLI 參數，不碰任何付費 API。需要 `FMP_API_KEY` 的只有 Step 7 的 script 備援——而它本來就不是這一步的主路徑，跳過不影響其餘五步。`state/theses/` 不用預先手動建立：`trader-memory-core` 的寫入操作（`ingest`、`open-position` 等）與 `check_circuit_breaker.py`、`check_pre_trade_discipline.py` 的 `--output-dir`/`--journal-dir` 都會自己 `mkdir(parents=True, exist_ok=True)`。唯一要注意的是紀律閘門的 `--state-dir` 本身沒有預設值——不傳就等於沒有本地論點可讀，近期虧損(revenge window)檢查會靜靜地找不到任何紀錄，不是報錯，但也等於沒真的查過。
 
 ## 產出解讀
 
-`circuit_breaker_decision`(SKILL.md 範例):
+`circuit_breaker_decision`（SKILL.md 範例）：
 ```json
 {
   "recommendation": "COOLDOWN",
@@ -95,7 +95,7 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 }
 ```
 
-`position_sizing`(實跑上面 Step 8 那條指令得到的結果——套了 `--max-position-pct`/`--max-sector-pct`/`--current-sector-exposure` 三個組合限制,產業曝險 51 股比純風險算出的 153 股更緊,成為 `binding_constraint`;SKILL.md 另有一個不帶組合限制、`final_recommended_shares: 153`、`binding_constraint: null` 的基礎範例,那是沒傳這三個旗標時的結果):
+`position_sizing`（實跑上面 Step 8 那條指令得到的結果——套了 `--max-position-pct`/`--max-sector-pct`/`--current-sector-exposure` 三個組合限制，產業曝險 51 股比純風險算出的 153 股更緊，成為 `binding_constraint`；SKILL.md 另有一個不帶組合限制、`final_recommended_shares: 153`、`binding_constraint: null` 的基礎範例，那是沒傳這三個旗標時的結果）：
 ```json
 {
   "final_recommended_shares": 51,
@@ -106,7 +106,7 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 }
 ```
 
-`pre_trade_discipline_decision`(依 script 實際欄位重建,SKILL.md 未附完整範例):
+`pre_trade_discipline_decision`（依 script 實際欄位重建，SKILL.md 未附完整範例）：
 ```json
 {
   "overall_decision": "GO",
@@ -121,13 +121,13 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
   "rationale": "All actionable manual-order candidates passed the pre-trade discipline gate."
 }
 ```
-`overall_decision` 只有四種值:`GO`、`NO_ACTIONABLE_ORDERS`、`REVIEW_REQUIRED`、`NO_GO`,`NO_GO` 排位在 `REVIEW_REQUIRED` 之上——明確違規永遠蓋過「需要複核」。
+`overall_decision` 只有四種值：`GO`、`NO_ACTIONABLE_ORDERS`、`REVIEW_REQUIRED`、`NO_GO`，`NO_GO` 排位在 `REVIEW_REQUIRED` 之上——明確違規永遠蓋過「需要複核」。
 
 ## 收尾
 
-`manual_review` 清單裡跟這一段直接相關的三條,親手跑完之後要再對照一次:下單前確認 `circuit_breaker_decision` 是 `TRADING_ALLOWED`;下單前確認 `pre_trade_discipline_decision` 是 `GO`;所有訂單都在券商手動輸入,沒有自動執行。第一條卡在流程最前面,第三條卡在流程最後面,中間五步——不管跑得多順、`validated_setups` 多乾淨、`position_sizing` 算得多精確——沒有一步能替第三條做決定。
+`manual_review` 清單裡跟這一段直接相關的三條，親手跑完之後要再對照一次：下單前確認 `circuit_breaker_decision` 是 `TRADING_ALLOWED`；下單前確認 `pre_trade_discipline_decision` 是 `GO`；所有訂單都在券商手動輸入，沒有自動執行。第一條卡在流程最前面，第三條卡在流程最後面，中間五步——不管跑得多順、`validated_setups` 多乾淨、`position_sizing` 算得多精確——沒有一步能替第三條做決定。
 
-跟第一部實作章立的場一樣:這一路六步給出的是可重跑、可稽核的 verdict,不是保證獲利的公式,更不是自動下單的許可。`GO` 之前不下單,是這一部從頭到尾唯一不留模糊空間的一句話。
+跟第一部實作章立的場一樣：這一路六步給出的是可重跑、可稽核的 verdict，不是保證獲利的公式，更不是自動下單的許可。`GO` 之前不下單，是這一部從頭到尾唯一不留模糊空間的一句話。
 
 ## 延伸閱讀
 
