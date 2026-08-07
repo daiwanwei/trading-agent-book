@@ -95,14 +95,14 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 }
 ```
 
-`position_sizing`(SKILL.md 範例,無額外組合限制時):
+`position_sizing`(實跑上面 Step 8 那條指令得到的結果——套了 `--max-position-pct`/`--max-sector-pct`/`--current-sector-exposure` 三個組合限制,產業曝險 51 股比純風險算出的 153 股更緊,成為 `binding_constraint`;SKILL.md 另有一個不帶組合限制、`final_recommended_shares: 153`、`binding_constraint: null` 的基礎範例,那是沒傳這三個旗標時的結果):
 ```json
 {
-  "final_recommended_shares": 153,
-  "final_position_value": 23715.0,
-  "final_risk_dollars": 994.50,
-  "final_risk_pct": 0.99,
-  "binding_constraint": null
+  "final_recommended_shares": 51,
+  "final_position_value": 7905.0,
+  "final_risk_dollars": 331.5,
+  "final_risk_pct": 0.33,
+  "binding_constraint": "max_sector_pct"
 }
 ```
 
