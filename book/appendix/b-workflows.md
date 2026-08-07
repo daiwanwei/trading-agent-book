@@ -1,5 +1,5 @@
 <!-- generated: true -->
-<!-- source: tradermonty/claude-trading-skills@7a5457f -->
+<!-- source: tradermonty/claude-trading-skills@f452ecb -->
 # 附錄 B：Workflows 對照表
 
 共 11 條 workflow。本頁由 `scripts/generate_appendix.py` 自動生成，請勿手動編輯。
