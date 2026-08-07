@@ -113,3 +113,40 @@ def render_workflows_appendix(workflows: list, upstream_commit: str) -> str:
                 f"| `{step.get('skill', '—')}` | {gate} |"
             )
     return "\n".join(lines) + "\n"
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Generate appendix A/B from the upstream claude-trading-skills repo"
+    )
+    parser.add_argument("--upstream", type=Path, default=DEFAULT_UPSTREAM)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "book" / "appendix",
+    )
+    args = parser.parse_args(argv)
+
+    if not (args.upstream / "skills-index.yaml").exists():
+        print(f"error: upstream not found at {args.upstream}", file=sys.stderr)
+        return 1
+
+    commit = get_upstream_commit(args.upstream)
+    index = load_skills_index(args.upstream)
+    workflows = load_workflows(args.upstream)
+    args.output.mkdir(parents=True, exist_ok=True)
+    (args.output / "a-skills-reference.md").write_text(
+        render_skills_appendix(index, commit), encoding="utf-8"
+    )
+    (args.output / "b-workflows.md").write_text(
+        render_workflows_appendix(workflows, commit), encoding="utf-8"
+    )
+    print(
+        f"generated appendix A ({len(index['skills'])} skills) "
+        f"and B ({len(workflows)} workflows) @ {commit}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

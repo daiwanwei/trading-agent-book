@@ -9,6 +9,7 @@ from generate_appendix import (
     get_upstream_commit,
     render_skills_appendix,
     render_workflows_appendix,
+    main,
 )
 
 FIXTURE = Path(__file__).parent / "fixtures" / "upstream"
@@ -56,3 +57,19 @@ def test_render_workflows_appendix():
     assert "何時不執行：Do not use as a signal." in out
     assert "`alpha-skill`" in out
     assert "| 1 | Run alpha | `alpha-skill` | ✅ |" in out
+
+
+def test_main_writes_both_appendices(tmp_path):
+    out_dir = tmp_path / "appendix"
+    code = main(["--upstream", str(FIXTURE), "--output", str(out_dir)])
+    assert code == 0
+    a = (out_dir / "a-skills-reference.md").read_text(encoding="utf-8")
+    b = (out_dir / "b-workflows.md").read_text(encoding="utf-8")
+    assert a.startswith("<!-- generated: true -->")
+    assert b.startswith("<!-- generated: true -->")
+
+
+def test_main_errors_on_missing_upstream(tmp_path, capsys):
+    code = main(["--upstream", str(tmp_path / "nope"), "--output", str(tmp_path)])
+    assert code == 1
+    assert "upstream not found" in capsys.readouterr().err
