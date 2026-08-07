@@ -8,9 +8,9 @@
 
 ## 本部地圖
 
-第一部沿著這條 workflow 的四個步驟走，但五節的節奏並不一樣重。
+第一部借這條 workflow 的四個步驟定調，但五節之中只有三節真的對應到步驟，其餘兩節是刻意補上的背景。
 
-**1.1 市場的心跳：廣度與參與度**——每天都要量。`market-breadth-analyzer` 與 `uptrend-analyzer` 是 workflow 裡兩個必經步驟，沒有 `optional` 標記，也都不是決策閘，只負責把今天的證據攤開來。
+**1.1 市場的心跳：廣度與參與度**——每天都要量。`market-breadth-analyzer` 與 `uptrend-analyzer` 是 workflow 裡兩個必經步驟，沒有 `optional` 標記，也都不是閘門，只負責把今天的證據攤開來。
 
 **1.2 頂部的三種徵兆**——風險升溫時才展開。對應的是 workflow 唯一標成 `optional: true` 的第 3 步 `market-top-detector`：不查，流程照樣往下走，只是第 4 步的判斷會少一份輸入。
 
@@ -18,7 +18,7 @@
 
 **1.4 更長的視野：宏觀 regime 與泡沫**——拉遠到週的尺度。`macro-regime-detector` 只出現在這條 workflow 的 `optional_skills` 清單裡，本身沒有被排進任何一個步驟——它是備援視角，不是每天必查的證據來源。
 
-**1.5 收斂成一個姿態**——每天的終點，也是每天必經之處。第 4 步 `exposure-coach` 把前面的證據收成一句判斷，是整條 workflow 裡唯一的 `decision_gate: true`；它要回答的 `decision_question` 只有一個：以今天的廣度、參與度與頂部風險，新的波段風險該是 `allow`、`restrict`，還是 `cash-priority`。
+**1.5 收斂成一個姿態**——每天的終點，也是每天必經之處。第 4 步 `exposure-coach` 把前面的證據收成一句判斷；整條 workflow 裡，只有這一步的 `decision_gate` 標成 `true`。它要回答的 `decision_question` 只有一個：以今天的廣度、參與度與頂部風險，新的波段風險該是 `allow`、`restrict`，還是 `cash-priority`。
 
 頭尾兩節每天都要走完；1.2 到 1.4 是視情況才打開的背景知識，不是每天的固定動作。
 
