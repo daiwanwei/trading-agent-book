@@ -1,6 +1,6 @@
 # 實作：trade-memory-loop
 
-這週三（2026-08-05），第三部實作章那筆判了 `GO` 的 `th_aapl_gm_20260703_0001` 平倉了——168.00 元出場，比 155.00 元的進場多賺了 13 點。從 `ENTRY_READY` 走到真的成交，是人在券商那端按下去的，不是任何腳本，第三部收尾已經講過；這裡接手的是平倉之後的事。`trade-memory-loop` 跟前三部的固定節奏不一樣：不是每天跑一次，是每次平倉才觸發，manifest 標的 `estimated_minutes` 落在半小時上下，`api_profile` 分類跟前三部一樣屬於 `no-api-basic` 這一檔。整條迴圈總共會產出五份 artifact，真正卡在 `required_skills` 清單裡的，就只有負責記錄的 `trader-memory-core` 跟負責分類的 `signal-postmortem`；教練與回測那兩支，manifest 裡都標成 `optional_skills`，跑不跑由使用者自己決定。不用任何付費 API：Step 1 到 Step 3 全部離線可跑，`FMP_API_KEY` 只在兩處派上用場——thesis 的 `outcome.mae_pct`／`outcome.mfe_pct`，以及底下會提到的 `outcome_category` 真實分類。
+這週三（2026-08-05），第三部實作章那筆判了 `GO` 的 `th_aapl_gm_20260703_0001` 平倉了——168.00 元出場，比 155.00 元的進場多賺了 13 點。從 `ENTRY_READY` 走到真的成交，是人在券商那端按下去的，不是任何腳本，第三部收尾已經講過；這裡接手的是平倉之後的事。`trade-memory-loop` 跟前三部的固定節奏不一樣：不是每天跑一次，是每次平倉才觸發，manifest 標的 `estimated_minutes` 落在半小時上下，`api_profile` 分類跟前三部一樣屬於 `no-api-basic` 這一檔。整條迴圈總共會產出六份 artifact，真正卡在 `required_skills` 清單裡的，就只有負責記錄的 `trader-memory-core` 跟負責分類的 `signal-postmortem`；教練與回測那兩支，manifest 裡都標成 `optional_skills`，跑不跑由使用者自己決定。不用任何付費 API：Step 1 到 Step 3 全部離線可跑，`FMP_API_KEY` 只在 Step 2 派得上用場——底下會提到，沒有這把 key，`outcome_category` 就分類不出來。
 
 ## 兩種跑法
 
@@ -45,12 +45,12 @@ python3 skills/trader-memory-core/scripts/trader_memory_cli.py review --state-di
 
 ## 週/月節奏
 
-每週收盤後，`weekly-performance-digest` 把這一週所有 `CLOSED` 論點滾成一份摘要——這支 script 的 `--state-dir` 要求目錄已經存在，不像 `trader-memory-core` 的 `ingest`／`store` 系列指令會自己 `mkdir(parents=True)`，第一次跑之前得手動確認 `state/theses/` 已經在：
+每週收盤後，`weekly-performance-digest` 把這一週所有 `CLOSED` 論點滾成一份摘要——這支 script 的 `--state-dir` 要求目錄已經存在，不像 `trader-memory-core` 的 `ingest`：`register()` 裡那行 `mkdir(parents=True, exist_ok=True)` 只在登記新論點時跑一次；同一支 `store` 底下的 `close`／`trim` 這類指令都要先讀到已存在的論點，不會替你建目錄，第一次跑之前得手動確認 `state/theses/` 已經在：
 ```bash
 python3 skills/weekly-performance-digest/scripts/generate_weekly_digest.py \
   --state-dir state/theses --from-date 2026-08-03 --to-date 2026-08-09 --output-dir reports/ -v
 ```
-這週只平倉這一筆，輸出就是 `1 trades, 1W/0L, P&L $663.00`；`pattern_analysis` 裡的 `by_source_skill`、`by_thesis_type` 各自只有一個桶，樣本一多才看得出分布。`metrics.r_multiple_avg` 算出來是 `2.0`——用的是 `pnl_dollars / ((entry.actual_price − exit.stop_loss) × shares)`，155.00 進場、148.50 停損、168.00 出場，跟第三部位算出來的風險距離對得起來，不是巧合。月初第一個週末，`monthly-performance-review` 第 3 步把同一支 `review_trade_performance.py` 再叫一次——只是 `--input` 換成帶 `review_type: monthly_aggregate`、裝著整月 `monthly.trades` 清單的 JSON，同一支腳本認得兩種身分，靠的是輸入檔裡的 `review_type` 欄位，不是命令列旗標。
+這週只平倉這一筆，輸出就是 `1 trades, 1W/0L, P&L $663.00`；`pattern_analysis` 裡的 `by_source_skill`、`by_thesis_type` 各自只有一個桶，樣本一多才看得出分布。`metrics.r_multiple_avg` 算出來是 `2.0`——用的是 `pnl_dollars / ((entry.actual_price − exit.stop_loss) × shares)`，155.00 進場、148.50 停損、168.00 出場，跟第三部位算出來的風險距離對得起來，不是巧合。月初第一個週末，`monthly-performance-review` 第 3 步一樣叫 `review_trade_performance.py`，但決定行為的不是輸入檔裡的 `review_type`——那個欄位只被讀出來原樣印進報告，`build_review()` 沒有任何一支 `evaluate_*` 函式照它分支。真正的分岔在 `main()`：只傳一個 `--input` 就直接載入；傳兩個以上，script 自動組一個 `monthly_aggregate` 包裝，同時在 stderr 印警告——這個包裝只是把每筆記錄原樣塞進 `monthly.trades`，不做任何逐筆彙整，而 `monthly.trades` 事實上從沒被任何 `evaluate_*` 函式讀過，唯一真的會影響風險判斷的是 `monthly.consecutive_losses`，包裝本身並不會自動填上。script 自己的註解說，真正的月度聚合器還沒寫，是待辦；想要準確的月度分析，得自己先把整月資料聚合成一份 JSON 當單一 `--input` 傳進去。
 
 ## 產出解讀
 
@@ -63,7 +63,7 @@ outcome:
   mae_pct: null
   mfe_pct: null
 ```
-`mae_pct`／`mfe_pct` 留白——4.1 已經講過，沒設 `FMP_API_KEY` 就是這樣。
+`mae_pct`／`mfe_pct` 留白，不是因為沒設 `FMP_API_KEY`——Step 1 的 `close()` 從頭到尾不會呼叫任何抓報價的函式，這兩個欄位在 `close()` 裡壓根沒被碰過。真的會抓歷史報價的是 `thesis_review.generate_postmortem()` 裡的 `compute_mae_mfe()`，但抓不抓得到，取決於呼叫端有沒有傳 `price_adapter`——Step 5 用的 `postmortem` 子指令，argparse 只認 `thesis_id` 跟 `--journal-dir`，沒有 `--api-key`，`main()` 也從沒建過 `FMPPriceAdapter`，就算環境變數設了 `FMP_API_KEY`，這條 CLI 路徑目前還是拿不到 MAE/MFE。
 
 `postmortem_findings`（`postmortem_recorder.py` 實跑 Step 2 寫出的欄位，不是重建的）：
 ```json
