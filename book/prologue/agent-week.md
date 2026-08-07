@@ -158,7 +158,7 @@ flowchart TD
     EDGE -.->|改進後的 skills| SOD
 ```
 
-圖上每條實線都對應上游 YAML 裡真實的 `downstream_hints` 或前置關係：`exposure_decision` 指向 `swing-opportunity-daily`，`candidate_journal_entry` 與 `thesis_record` 指向 `trade-memory-loop`，`postmortem_findings` 與 `holdings_snapshot` 指向 `monthly-performance-review`。虛線那條是第五部的預告。
+圖上的實線有兩種出身。多數來自 YAML 宣告式的 artifact 接線：`exposure_decision` 的 `downstream_hints` 指向 `swing-opportunity-daily`，`candidate_journal_entry` 與 `thesis_record` 指向 `trade-memory-loop`，`postmortem_findings` 與 `holdings_snapshot` 指向 `monthly-performance-review`。另外四條沒有這種宣告可依：`GO` 之後交到人手上、實際成交之後才啟動平倉檢討，只寫在 `manual_review` 與 `when_to_run` 的散文裡；月度那兩條回饋線——規則變更回到 regime 閘門、`skill_improvement_backlog` 流向工具本身——也只有 `final_outputs` 的文字描述支撐。接縫是真的，但有幾道是用句子縫的，不是用欄位。虛線那條則純粹是第五部的預告。
 
 從這裡開始，五部各自把上圖的一個節點拆開來看。第一部先回到週一早上六點半，回答那個最基本、也最常被跳過的問題：今天到底能不能做？
 
