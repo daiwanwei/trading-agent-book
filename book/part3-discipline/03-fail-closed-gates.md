@@ -20,7 +20,7 @@
 
 ## 機制
 
-兩個 skill 有個共同結構，跟 3.1 節看到的 `position-sizer` 與 `futures-position-sizer` 一樣：都只讀本地的 trader-memory-core thesis YAML（`state/theses/` 底下的 `th_*.yaml`），不叫任何付費 API，純計算、離線可跑。
+斷路器與紀律閘門有個共同結構：都只讀本地的 trader-memory-core thesis YAML（`state/theses/` 底下的 `th_*.yaml`）。這跟 3.1 節的 `position-sizer` 與 `futures-position-sizer` 一樣，共用同一個特徵——都不需要 API key，純本地計算，離線可跑。
 
 斷路器的輸出帶一個 `data_quality` 欄位，三種取值分得很細：`OK` 是狀態目錄存在、每個 thesis 檔都正常讀出、沒有任何格式錯誤或衝突的紀錄被跳過；`EMPTY_STATE` 是狀態目錄根本不存在、或裡面沒有任何 `th_*.yaml` 檔案——這種情況回傳 `TRADING_ALLOWED`，理由寫得直接：不該讓一個還沒有交易紀錄的新使用者被「沒有歷史」這件事擋下來；`PARTIAL` 才是真正觸發 fail-closed 的那一種——只要有一筆 ledger 紀錄或終局結果被跳過、格式錯誤、非有限值，或跟另一個來源的損益數字衝突，就回傳 `HALTED`，加一條 `incomplete_state_data` 規則，`active_until` 是 `null`：不是等一段時間自動解除，而是要求先修好資料、重新跑一次才能解除。唯一可回復的例外，是一筆遺留（legacy）thesis 沒有 realized-P&L 的 ledger 紀錄，但終局的 `outcome.pnl_dollars` 是有限值——這種情況仍標成 `PARTIAL`，留給稽核看見，但不會單獨強迫整體判定變成 `HALTED`。這正是上游最近一次修正（fail closed on incomplete state）落地後的行為：「沒有資料」跟「資料有問題」被刻意分開處理——前者不擋新人，後者才是真正要 fail-closed 的地方。
 
