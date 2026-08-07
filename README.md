@@ -26,7 +26,8 @@ python3 scripts/check_book.py --upstream ~/Projects/wade/math/claude-trading-ski
 |---|---|
 | 序章 + 第一部 | ✅ 已完成 |
 | 第三部（風險與紀律） | ✅ 已完成 |
-| 第二部（M3）→ 第四、五部（M4）→ 附錄 C/D（M5） | 🚧 依序進行中 |
+| 第二部（五大流派） | ✅ 已完成 |
+| 第四、五部（M4）→ 附錄 C/D（M5） | 🚧 依序進行中 |
 
 ## 本書立場
 
