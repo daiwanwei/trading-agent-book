@@ -4,7 +4,7 @@
 
 凌晨 05:00，沒有人醒著。macOS 的 launchd 照著 `com.trade-analysis.skill-improvement` 這支排程把 `run_skill_improvement.sh` 叫起來，底下真正幹活的是 `scripts/run_skill_improvement_loop.py`。
 
-它開工後的第一個動作不是評分，是先確認自己有沒有資格動手。第一關是一把以 PID 為憑的鎖檔：另一個實例還活著就直接退出，發現的是死掉的舊 PID 才把鎖清掉重寫。第二關是 git——工作區有變動時，只有 `reports/`、`logs/`、`state/` 底下的檔案算安全，未追蹤的新檔案不管放在哪裡一律擋下；當前分支不是 `main` 就中止；`git pull --ff-only` 拉不動同樣中止，日誌留一句下次再試。三關任一沒過，這一天的改進就不會發生——一個把自己也關在閘門外面的程式。
+它開工後的第一個動作不是評分，是先確認自己有沒有資格動手。第一關是一把以 PID 為憑的鎖檔：另一個實例還活著就直接退出，發現的是死掉的舊 PID 才把鎖清掉重寫。第二關是 git——工作區有變動時，只有 `reports/`、`logs/`、`state/` 底下的檔案算安全，未追蹤的新檔案只有 `state/` 底下的放行，其餘一律擋下；當前分支不是 `main` 就中止；`git pull --ff-only` 拉不動同樣中止，日誌留一句下次再試。三關任一沒過，這一天的改進就不會發生——一個把自己也關在閘門外面的程式。
 
 過了關，它列出 `skills/` 底下所有帶 `SKILL.md` 的目錄，照 `logs/.skill_improvement_state.json` 裡記著的輪替索引往下取一個。今天輪到誰，昨天那一輪就決定了。名單裡有 `vcp-screener`、有 `position-sizer`、有 `drawdown-circuit-breaker`、有 `pre-trade-discipline-gate`——前四部拿來當主角的那些工具，沒有一個享有豁免。
 
