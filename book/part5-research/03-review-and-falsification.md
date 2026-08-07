@@ -6,7 +6,7 @@
 
 ## 方法論
 
-八項準則各自算分，但判準不是單純加權平均及格。`review_criteria.md` 寫死一條硬規則：C1（Edge Plausibility）或 C2（Overfitting Risk）只要判到 `fail`，不管另外六項分數多高，直接 `REJECT`——這跟第三部斷路器「多條規則同時觸發、回傳最嚴格那個狀態」是同一種脾氣：壞消息不會被好消息平均掉，一票就能否決。`confidence_score` 要跨過 70 分門檻才夠格拿 `PASS`，但門檻不是唯一條件——判準原句是「confidence_score >= 70 and no "fail" findings」，分數再高，只要背著一條 `fail`，照樣過不了關；跌破 35 分則不論其他，直接 `REJECT`；剩下的中間地帶才是 `REVISE`，附一份修正指示，等修完再送審一次。這條「一票否決加雙重條件」的判準，把研究這一端的紀律，套進跟第三部 fail-closed 閘門同一種形狀。
+八項準則各自算分，但判準不是單純加權平均及格。`review_criteria.md` 寫死一條硬規則：C1（Edge Plausibility）或 C2（Overfitting Risk）只要判到 `fail`，不管另外六項分數多高，直接 `REJECT`——這跟第三部斷路器面對好幾個檢查同時出狀況時只認最壞那一個結果的做法，是同一種脾氣：壞消息不會被好消息平均掉，一票就能否決。`confidence_score` 要跨過 70 分門檻才夠格拿 `PASS`，但門檻不是唯一條件——判準原句是「confidence_score >= 70 and no "fail" findings」，分數再高，只要背著一條 `fail`，照樣過不了關；跌破 35 分則不論其他，直接 `REJECT`；剩下的中間地帶才是 `REVISE`，附一份修正指示，等修完再送審一次。這條「一票否決加雙重條件」的判準，把研究這一端的紀律，套進跟第三部 fail-closed 閘門同一種形狀。
 
 `backtest-expert` 站在更早一步，把同一種懷疑態度寫進核心哲學——目標不是找紙上最賺的策略，是找壞得最少的策略；SKILL.md 給的時間分配是兩成拿來想點子，八成拿來想辦法打破它。`residual-edge-analyzer` 接在 `backtest-expert` 之後，SKILL.md 自己把定位寫成一句話：「Treat this as a falsification gate after backtest-expert, not as trade authorization」——它算出的四種狀態標籤，仍然可能被一個獨立的 `decision_eligibility` 攔下來：就算統計結果好看，只要資料來源、成本基準、樣本量或共線性任一項有未解的警告，判定照樣落回 `REVIEW_REQUIRED`——跟斷路器的 `PARTIAL` 資料品質同一個道理：把「不確定」和「確定沒事」分開處理，前者一律先擋。`strategy-pivot-designer` 則守在迭代迴圈的出口：`backtest-expert` 反覆調參數調到停滯，不代表可以無限調下去——停滯偵測會逼出一次結構性 pivot，不是繼續在同一組參數附近打轉。
 
@@ -28,7 +28,7 @@
 
 `residual-edge-analyzer` 在 `skills-index.yaml` 裡標的 `status` 是 `beta`，不是 `production`；同一份分析算出 `RESIDUAL_EDGE` 這麼漂亮的標籤，也該連著這個版本狀態一起讀，不能當成跟 `backtest-expert` 或審查腳本同等成熟的判定。狀態標籤本身也容易被單獨截斷來讀：只看到 `status: RESIDUAL_EDGE` 就以為證據夠了，忽略了旁邊那個獨立算出的 `decision_eligibility`——後者只要碰到資料來源、成本基準、樣本量或共線性任一項未解的警告，照樣落回 `REVIEW_REQUIRED`，兩個欄位必須一起讀才算完整。
 
-停滯偵測的四個觸發也不是同一起跑線：`improvement_plateau`、`tail_risk` 第一輪迭代就能觸發，`overfitting_proxy`、`cost_defeat` 卻要求至少 2 輪歷史——這不是疏漏，是刻意的不對稱：回撤失控這種結構性風險值得立刻喊停，判斷是不是過擬合這種事，沒有足夠的迭代歷史就先不評斷。`--strict-export` 同樣容易被誤讀成整體判準變嚴——它只在一個窄範圍生效：草稿本來就符合匯出資格、又背著至少一條 `warn` 的時候，才會被多降一級，八項準則本身的計分方式完全沒變。
+停滯偵測的四個觸發也不是同一起跑線：`tail_risk`（high）第一輪迭代就能觸發，`stagnation_triggers.md` 寫明它「can fire on the very first evaluation」；`overfitting_proxy`、`cost_defeat`（皆 medium）都要求至少 2 輪歷史；反倒是 `improvement_plateau`（high）門檻最高，預設要跑滿 K=3 輪，文件原句是「Cannot fire with fewer iterations」。這不是疏漏，是刻意的不對稱：回撤失控這種結構性風險值得立刻喊停，`tail_risk` 因此不等歷史；但停滯本身要看分數在好幾輪之間還動不動，至少得有 K 個分數點才算得出全距，天生就要等最久；判斷是不是過擬合同樣得先累積一點迭代紀錄才有意義，所以卡在 2 輪。`--strict-export` 同樣容易被誤讀成整體判準變嚴——它只在一個窄範圍生效：草稿本來就符合匯出資格、又背著至少一條 `warn` 的時候，才會被多降一級，八項準則本身的計分方式完全沒變。
 
 ## 延伸閱讀
 
