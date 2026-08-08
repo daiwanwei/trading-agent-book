@@ -7,7 +7,8 @@
 - [x] `book/part1-regime/04-macro-and-bubble.md`：「第 32 行」行號引用對每日演進的上游太脆弱，改為欄位名引用——（M5 wave 1 完成）
 - [x] `book/part1-regime/05-exposure-posture.md`：「反向換算過」措辭可能被讀成代數反轉（實為獨立計算、方向相反），可再鬆一字——（M5 wave 1 完成）
 - [x] 序章「兩種出身」句未涵蓋 CPW→KDW 邊的 `prerequisite_workflows` 出處類別（無錯誤陳述，僅不窮盡）——（M5 wave 1 完成）
-- [x] 全書重複語感：「把話說死／講死」出現多次（M5 wave 1/2 部分完成，part1/2/序章處理；README.md:31 與 05-shapiro.md:44 保留未動因其超出各波編輯範圍）；1.1 divergence 警告條件漏了 spread>20pp 分支——（M5 wave 1 完成）
+- [x] 1.1 divergence 警告條件漏了 spread>20pp 分支——（M5 wave 1 完成）
+- [ ] 全書重複語感：「把話說死／講死」出現多次——（M5 wave 1/2 部分完成：序章與第二部三處已改（agent-week.md:35, part2/README.md:7, 01-minervini.md:29），README.md:31 與 05-shapiro.md:44 留待最終 fix wave）
 - [x] 3.3 的 TRADING_HALTED 引文可加註「斷路器實際不會輸出此值」——（M5 wave 3 完成）；3.2/實作章「唯一的腳本」可改「唯一的 CLI 入口」——（M5 wave 3 完成）
 
 ## M4（第五部）前置
@@ -27,7 +28,8 @@
 ## 工具強化（下次動到腳本時）
 
 - [x] `scripts/generate_appendix.py`：加 rendered-rows == len(skills) 斷言（category 遺漏時 fail closed）——（Task 2 完成）；workflows/ 目錄缺失防護——（Task 2 完成）；表格 cell 的 `|` 跳脫——（Task 2 完成）
-- [x] `scripts/check_book.py`：SUMMARY.md 缺失時的友善錯誤——（Task 1 完成）；upstream dirty tree 時 source-commit 標記可能失真——（未交付，保留以供下次動到此腳本時）
+- [x] `scripts/check_book.py`：SUMMARY.md 缺失時的友善錯誤——（Task 1 完成）
+- [ ] `scripts/check_book.py`：upstream dirty tree 時 source-commit 標記可能失真——（未交付，保留以供下次動到此腳本時）
 - [ ] `tests/`：appendix B renderer 的 optional_skills / prerequisite_workflows /（可選）步驟分支補 fixture 覆蓋——（Task 2 明確未含 appendix B 分支測試，誠實保留未勾）
 - [x] check_book.py：加「CJK 散文中出現半形標點（code span 之外）」檢查——（Task 1 完成）
 
