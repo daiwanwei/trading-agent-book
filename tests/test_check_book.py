@@ -8,6 +8,8 @@ from check_book import (
     check_summary_files,
     find_upstream_links,
     check_upstream_links,
+    find_halfwidth_punct,
+    check_punctuation,
     main,
 )
 
@@ -63,3 +65,39 @@ def test_main_exit_code(tmp_path):
     book = make_book(tmp_path)
     upstream = make_upstream(tmp_path)
     assert main(["--book", str(book), "--upstream", str(upstream)]) == 1
+
+
+def test_find_halfwidth_punct_flags_cjk_adjacent():
+    text = "這是一句,有問題的話\n正常句子，沒問題\n時間 07:35 不算\ncode `a:b` 不算\n比例 2:1 不算\n這句也錯:後面接中文"
+    hits = find_halfwidth_punct(text)
+    assert len(hits) == 2
+    assert hits[0][0] == 1
+    assert hits[1][0] == 6
+
+
+def test_find_halfwidth_punct_ignores_english_quote_closed_by_bracket():
+    # A verbatim English quotation wrapped in full-width brackets legitimately
+    # ends with its own halfwidth punctuation right against the closing
+    # bracket (e.g. "...cash-priority?」"). The closing bracket itself is
+    # CJK *punctuation*, not a Han ideograph, so this must not be flagged --
+    # a real false positive found when running the real book (see
+    # book/part1-regime/05-exposure-posture.md:7).
+    text = "他問「is this allowed?」然後點頭"
+    assert find_halfwidth_punct(text) == []
+
+
+def test_check_punctuation_on_clean_book(tmp_path):
+    book = tmp_path / "book"
+    book.mkdir()
+    (book / "SUMMARY.md").write_text("# Summary\n\n- [a](ok.md)\n", encoding="utf-8")
+    (book / "ok.md").write_text("# a\n\n全形標點，沒問題。時間 07:35。\n", encoding="utf-8")
+    assert check_punctuation(book) == []
+
+
+def test_main_friendly_error_on_missing_summary(tmp_path, capsys):
+    empty = tmp_path / "nobook"
+    empty.mkdir()
+    code = main(["--book", str(empty), "--upstream", str(tmp_path / "noup")])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "SUMMARY.md not found" in err
