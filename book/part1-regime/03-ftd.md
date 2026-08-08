@@ -20,7 +20,7 @@ FTD 是 O'Neil 在《How to Make Money in Stocks》裡定義的訊號，`ftd_met
 
 ## 機制
 
-Agent 執行 `ftd-detector` skill，靠 `rally_tracker.py` 裡的 `track_rally_attempt()` 與 `detect_ftd()` 把上面的規則寫成一個狀態機：`NO_SIGNAL → CORRECTION → RALLY_ATTEMPT → FTD_WINDOW → FTD_CONFIRMED`，另外兩條失敗分支——`RALLY_FAILED`（跌破 swing low，或 Day 2、Day 3 收盤跌破 Day 1 低點）、`FTD_INVALIDATED`（收盤跌破 FTD 當日低點）。`get_market_state()` 對 S&P 500 與 QQQ 各跑一次這套狀態機，再合成一個 `combined_state`——單一指數出現 FTD 就足以觸發訊號，兩個指數在幾天內先後確認，質量分數會額外加 15 分，代表更廣的機構認可。
+Agent 執行 `ftd-detector` skill，靠 `rally_tracker.py` 裡的 `track_rally_attempt()` 與 `detect_ftd()` 把上面的規則寫成一個狀態機：`NO_SIGNAL → CORRECTION → RALLY_ATTEMPT → FTD_WINDOW → FTD_CONFIRMED`，另外兩條失敗分支——`RALLY_FAILED`（跌破 swing low，或 Day 2、Day 3 收盤跌破 Day 1 低點）、`FTD_INVALIDATED`（收盤跌破 FTD 當日低點）。方法論第四步「雙指數確認」在這裡落地：`get_market_state()` 對 S&P 500 與 QQQ 各跑一次這套狀態機，再合成一個 `combined_state`——單一指數出現 FTD 就足以觸發訊號，兩個指數在幾天內先後確認，質量分數會額外加 15 分，代表更廣的機構認可。
 
 資料面，`ftd_detector.py` 呼叫 FMP API 抓 S&P 500（`^GSPC`）與 QQQ 各 60 天以上的歷史 K 線，再各抓一次即時報價，合計四次呼叫，遠低於免費額度每日 250 次的上限。質量分數（0–100 分）按權重表合成：Day 4–7 底分 60、Day 8–10 底分 50；漲幅達 2.0%／1.5%／1.25% 三個級距分別加 15／10／5 分；成交量高於 50 日均量再加 10 分；雙指數同時確認加 15 分；再依 `post_ftd_monitor.py` 算出的 FTD 後續體質做加減。80 分以上是「Strong FTD」，建議倉位 75–100%；60–79 分「Moderate」，50–75%；40–59 分「Weak」，25–50%；40 分以下視同沒有 FTD 或已失敗，建議倉位壓到 0–25%。整套分析輸出成 `ftd_signal_report`——這是 `skills-index.yaml` 登記的正式產出，附帶 JSON 與 Markdown 兩份報告檔。
 

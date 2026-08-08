@@ -32,11 +32,11 @@
 
 有意思的是它在實作上的誠實。這條 workflow 的 `prerequisite_workflows` 區塊指名了 `market-regime-daily` 與它的 `exposure_decision`，但區塊上方掛著一行註解，說明驗證器並不強制 workflow 之間的先後順序。換句話說，這條前置關係是寫給人看的紀律，不是程式攔得住的東西。系統知道自己攔不住你，所以它把規則寫在你一定看得見的地方。
 
-第一步不是篩股，是 `drawdown-circuit-breaker`，產出 `circuit_breaker_decision`，而且同樣是 `decision_gate: true`。它問的問題跟 regime 那一關完全不同：市場准不准是一回事，你的帳戶准不准是另一回事。回撤太深、連續受傷，斷路器就不會回 `TRADING_ALLOWED`，後面十個步驟全部不必跑。`manual_review` 把話講死了：在篩選或計算任何新候選**之前**，先確認斷路器是 `TRADING_ALLOWED`。順序不是排版問題，是設計。
+第一步不是篩股，是 `drawdown-circuit-breaker`，產出 `circuit_breaker_decision`，而且同樣是 `decision_gate: true`。它問的問題跟 regime 那一關完全不同：市場准不准是一回事，你的帳戶准不准是另一回事。回撤太深、連續受傷，斷路器就不會回 `TRADING_ALLOWED`，後面十個步驟全部不必跑。`manual_review` 明確要求：在篩選或計算任何新候選**之前**，先確認斷路器是 `TRADING_ALLOWED`。順序不是排版問題，是設計。
 
 過了斷路器，偵查工具才上場。`vcp-screener` 是唯一必跑的那一個，產出 `vcp_candidates`。接下來四個都可選，各自代表一種找股票的世界觀：`stockbee-momentum-burst-screener` 找動能爆發、`stockbee-exhaustion-hammer-screener` 找衰竭後的反手、`canslim-screener` 找成長股、`theme-detector` 做題材交叉比對，分別產出 `momentum_burst_candidates`、`exhaustion_hammer_candidates`、`canslim_candidates` 與 `theme_candidates`。全部加起來，桌上可能攤著幾十檔。
 
-而 YAML 對這幾十檔的態度非常冷淡。`manual_review` 裡有兩條分別針對 Stockbee 的兩個 screener，說法一模一樣：把輸出當成候選生成，僅此而已。screener 不是判斷，是原料。
+而 YAML 對這幾十檔的態度非常冷淡。`manual_review` 裡有兩條分別針對 Stockbee 的兩個 screener，開頭一模一樣：把輸出當成候選生成，僅此而已。screener 不是判斷，是原料。
 
 第七步負責把原料變成判斷。`technical-analyst` 消化前面所有候選名單，在週線圖上驗證，產出 `validated_setups`，`decision_gate: true`。它的 `decision_question` 問得很具體：哪些候選有乾淨的週線結構——Stage 2 上升趨勢、緊縮的 base，或 Stockbee 式從受控 base 展開的區間擴張——並且通過人工看圖這一關？至於衰竭反手那一類，還要額外確認回檔不是論點被打破造成的，而且到當日低點的風險距離可以接受。不過的，淘汰。
 
@@ -158,7 +158,7 @@ flowchart TD
     EDGE -.->|改進後的 skills| SOD
 ```
 
-圖上的實線有兩種出身。多數來自 YAML 宣告式的 artifact 接線：`exposure_decision` 的 `downstream_hints` 指向 `swing-opportunity-daily`，`candidate_journal_entry` 與 `thesis_record` 指向 `trade-memory-loop`，`postmortem_findings` 與 `holdings_snapshot` 指向 `monthly-performance-review`。另外四條沒有這種宣告可依：`GO` 之後交到人手上、實際成交之後才啟動平倉檢討，只寫在 `manual_review` 與 `when_to_run` 的散文裡；月度那兩條回饋線——規則變更回到 regime 閘門、`skill_improvement_backlog` 流向工具本身——也只有 `final_outputs` 的文字描述支撐。接縫是真的，但有幾道是用句子縫的，不是用欄位。虛線那條則純粹是第五部的預告。
+圖上的實線有三種出身。多數來自 YAML 宣告式的 artifact 接線：`exposure_decision` 的 `downstream_hints` 指向 `swing-opportunity-daily`，`candidate_journal_entry` 與 `thesis_record` 指向 `trade-memory-loop`，`postmortem_findings` 與 `holdings_snapshot` 指向 `monthly-performance-review`。`core-portfolio-weekly` 到 `kanchi-dividend-weekly` 那條邊也是宣告式的，但出處不同：`holdings_snapshot` 自己的 `downstream_hints` 只點名 `monthly-performance-review`，這條邊靠的是消費端——`kanchi-dividend-weekly.yaml` 開頭的 `prerequisite_workflows`，指名 `core-portfolio-weekly` 與它的 `holdings_snapshot`，供步驟 4、5 的稅務與監控檢查選用。另外四條沒有這種宣告可依：`GO` 之後交到人手上、實際成交之後才啟動平倉檢討，只寫在 `manual_review` 與 `when_to_run` 的散文裡；月度那兩條回饋線——規則變更回到 regime 閘門、`skill_improvement_backlog` 流向工具本身——也只有 `final_outputs` 的文字描述支撐。接縫是真的，但有幾道是用句子縫的，不是用欄位。虛線那條則純粹是第五部的預告。
 
 從這裡開始，五部各自把上圖的一個節點拆開來看。第一部先回到週一早上六點半，回答那個最基本、也最常被跳過的問題：今天到底能不能做？
 
