@@ -18,7 +18,7 @@
 
 ## 機制
 
-`pead-screener` 支援兩種輸入模式。Mode A 直接呼叫 FMP 財報日曆，預設回溯 14 天、監控窗口 5 週；Mode B 吃 `earnings-trade-analyzer` 輸出的 JSON（`schema_version` 須為 "1.0"），用 `--candidates-json` 指定檔案、`--min-grade B` 篩掉 C／D 級。SKILL.md 特別標出一個排程陷阱：預市／美股 cron 例行任務該優先用 Mode B——Mode A 拉的是 FMP 全球財報日曆，可能把 API 額度花在非美股標的上，回傳一堆弱勢、不具操作意義的外國掛牌，還沒排到真正要看的美股名單就先燒完額度；如果還是用了 Mode A，且腳本回報額度被砍或出現非美股代碼，要把 PEAD 輸出標成降級、只能人工複核，不當乾淨候選來源使用。
+`pead-screener` 支援兩種輸入模式。Mode A 直接呼叫 FMP 財報日曆，預設回溯 14 天、監控窗口 5 週；Mode B 吃 `earnings-trade-analyzer` 輸出的 JSON（`schema_version` 須為 "1.0"），用 `--candidates-json` 指定檔案、`--min-grade B` 篩掉 C／D 級。`SKILL.md` 特別標出一個排程陷阱：預市／美股 cron 例行任務該優先用 Mode B——Mode A 拉的是 FMP 全球財報日曆，可能把 API 額度花在非美股標的上，回傳一堆弱勢、不具操作意義的外國掛牌，還沒排到真正要看的美股名單就先燒完額度；如果還是用了 Mode A，且腳本回報額度被砍或出現非美股代碼，要把 PEAD 輸出標成降級、只能人工複核，不當乾淨候選來源使用。
 
 `earnings-trade-analyzer` 跑完寫出 `earnings_trade_analyzer_YYYY-MM-DD_HHMMSS.json` 與對應的 Markdown；`pead-screener` 寫出 `pead_screener_YYYY-MM-DD_HHMMSS.json`／`.md`，每檔候選帶著四階段分類之一：MONITORING（財報後跳空但紅 K 尚未出現）、SIGNAL_READY（紅 K 已形成，等突破）、BREAKOUT（本週綠 K 收盤價站上紅 K 高點，可操作訊號）、EXPIRED（超過 5 週監控窗口，效果已明顯減弱）。
 
@@ -26,7 +26,7 @@
 
 ## 判讀與誤用
 
-財報意外本質上難以預測，這條偏差會直接反映在管線的資料品質上。`earnings-trade-analyzer` SKILL.md 專門留了一段降級處理：排程跑批時如果端點回傳 404、財報日曆離譜地空、或 API 額度耗盡導致計分沒跑完，不能直接回報「今天沒有財報反應」——要先用更窄的流動性條件重試一次，還是不行，才退到 FMP 穩定端點做未經計分的粗略排序，並且明確標成「初步／未評級」，不能替這些候選標上 A／B／C／D 等級。另一個真實存在的陷阱：篩選器可能印出「Candidates after filtering: 0」並正常結束，卻沒有寫出 JSON 檔案——這種情況下不能拿一個不存在的檔案去跑 PEAD Mode B，要老實說明沒有產生已評分的分析結果。
+財報意外本質上難以預測，這條偏差會直接反映在管線的資料品質上。`earnings-trade-analyzer` `SKILL.md` 專門留了一段降級處理：排程跑批時如果端點回傳 404、財報日曆離譜地空、或 API 額度耗盡導致計分沒跑完，不能直接回報「今天沒有財報反應」——要先用更窄的流動性條件重試一次，還是不行，才退到 FMP 穩定端點做未經計分的粗略排序，並且明確標成「初步／未評級」，不能替這些候選標上 A／B／C／D 等級。另一個真實存在的陷阱：篩選器可能印出「Candidates after filtering: 0」並正常結束，卻沒有寫出 JSON 檔案——這種情況下不能拿一個不存在的檔案去跑 PEAD Mode B，要老實說明沒有產生已評分的分析結果。
 
 PEAD 的出場規則寫得很具體：停損設在紅 K 低點下方，是硬停損，不是心理關卡；主要目標是 2R（進場價加上兩倍風險距離）；部位大小依風險控管，單筆不超過帳戶 1–2%，同時不能超過 20 日均額成交量（ADV20）的 1%，避免一天出不掉；同時持有的 PEAD 部位上限 3–5 個，跨產業分散，避免財報季集中在同一批相關股票上。監控窗口預設 5 週，效果在第 1–3 週最強、第 4–5 週明顯衰退；如果股票財報跳空後從未出現像樣的紅 K 回檔——`entry_exit_rules.md` 特別點名這種「gap-and-go」型態不算 PEAD 候選，因為沒有紅 K 就沒有明確的風險定義點。
 

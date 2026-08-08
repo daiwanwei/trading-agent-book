@@ -12,7 +12,7 @@
 
 ## 機制
 
-`edge_concepts.yaml` 的骨架照 `concept_schema.md`：頂層是 `generated_at_utc`、`as_of`、記錄輸入來源與 ticket 數量的 `source`（底下再分 `tickets_dir`、`hints_path`、`ticket_file_count`、`ticket_count` 四個欄位）、`concept_count`，底下是 `concepts` 陣列。每個 concept 必有 `id`、`title`、`hypothesis_type`、`mechanism_tag`、`regime`，再往下四個區塊——`support`（`ticket_count`、`avg_priority_score`、`symbols`、`entry_family_distribution`、`representative_conditions`，若靠 `--promote-hints` 促升了合成 ticket，才會多出 `real_ticket_count`、`synthetic_ticket_count`）、`abstraction`（`thesis` 與 `invalidation_signals`）、`strategy_design`（`playbooks`、`recommended_entry_family`、`export_ready_v1`）、`evidence`（`ticket_ids`、`matched_hint_titles`，合成 ticket 同樣多出 `synthetic_ticket_ids`）。Design Rule 寫死兩條：`abstraction` 必須同時有 `thesis` 與明確的 `invalidation_signals`；`export_ready_v1` 只有在建議的 entry_family 目前被 pipeline 介面 v1 支援時才能是 true。`hypothesis_type` 認得的九個值裡，`research_hypothesis` 是留給促升 ticket 裡關鍵字判斷不出具體類型的那一批用的 fallback。
+`edge_concepts.yaml` 的骨架照 `concept_schema.md`：頂層是 `generated_at_utc`、`as_of`、記錄輸入來源與 ticket 數量的 `source`（底下再分 `tickets_dir`、`hints_path`、`ticket_file_count`、`ticket_count` 四個欄位）、`concept_count`，底下是 `concepts` 陣列。每個 concept 必有 `id`、`title`、`hypothesis_type`、`mechanism_tag`、`regime`，再往下四個區塊——`support`（`ticket_count`、`avg_priority_score`、`symbols`、`entry_family_distribution`、`representative_conditions`，若靠 `--promote-hints` 促升了合成 ticket，才會多出 `real_ticket_count`、`synthetic_ticket_count`）、`abstraction`（`thesis` 與 `invalidation_signals`）、`strategy_design`（`playbooks`、`recommended_entry_family`、`export_ready_v1`）、`evidence`（`ticket_ids`、`matched_hint_titles`，合成 ticket 同樣多出 `synthetic_ticket_ids`）。Design Rule 寫死兩條：`abstraction` 必須同時有 `thesis` 與明確的 `invalidation_signals`；`export_ready_v1` 只有在建議的 `entry_family` 目前被 pipeline 介面 v1 支援時才能是 true。`hypothesis_type` 認得的九個值裡，`research_hypothesis` 是留給促升 ticket 裡關鍵字判斷不出具體類型的那一批用的 fallback。
 
 概念怎麼從一堆 ticket 收斂出來，`SKILL.md` 的 Workflow 給了五步：收集偵測器產出的 ticket YAML；可選地帶上 `hints.yaml` 做上下文比對；跑合成腳本；去重——「merge same-hypothesis concepts with overlapping conditions (containment > threshold)」，只在同一個 `hypothesis_type` 內比對，門檻用 `--overlap-threshold` 調（Quick Commands 給的示範值是 0.6，或用 `--no-dedup` 整個關掉）；最後才是人工審查，只把高支持度的 concept 往下送進策略設計。
 
@@ -20,7 +20,7 @@
 
 ## 判讀與誤用
 
-容易被誤讀的地方分兩層。第一層是 concept 本身：`export_ready_v1: true` 說的是「建議的 entry_family 目前被 pipeline 介面 v1 支援」——`concept_schema.md` 的 Design Rule 原句如此——不是「這個機制已經被驗證能賺錢」。`thesis` 寫得再完整，仍然是待否證的假說。`real_ticket_count`、`synthetic_ticket_count`、`synthetic_ticket_ids` 三個欄位只在用了 `--promote-hints` 且真的存在合成 ticket 時才出現，反過來讀，一個 concept 底下看不到這三個欄位，代表它完全由真實 ticket 撐起來，不是資料被省略。
+容易被誤讀的地方分兩層。第一層是 concept 本身：`export_ready_v1: true` 說的是「建議的 `entry_family` 目前被 pipeline 介面 v1 支援」——`concept_schema.md` 的 Design Rule 原句如此——不是「這個機制已經被驗證能賺錢」。`thesis` 寫得再完整，仍然是待否證的假說。`real_ticket_count`、`synthetic_ticket_count`、`synthetic_ticket_ids` 三個欄位只在用了 `--promote-hints` 且真的存在合成 ticket 時才出現，反過來讀，一個 concept 底下看不到這三個欄位，代表它完全由真實 ticket 撐起來，不是資料被省略。
 
 第二層是 draft，這裡藏著一個容易撞名的陷阱。`--risk-profile` 的三個合法值是 `conservative`、`balanced`、`aggressive`，整次執行只選一種；而每個 concept 底下生成的變體名稱裡，剛好也有一個叫 `conservative`——`SKILL.md` 的 When to Use 原句是「multiple variants (core/conservative/research-probe) per concept」。同一個詞在這裡出現兩次，指的是兩層完全不同的東西：一個是整批草稿共用的風險姿態，一個是同一個 concept 底下某一份具體草稿的名字。把兩者混為一談，很容易把「用 conservative 風險姿態跑出來的 core 草稿」誤讀成「這份草稿就是 conservative 變體」。
 

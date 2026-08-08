@@ -28,6 +28,6 @@
 
 **輸出是姿態，不是訊號。** `exposure_decision` 說 `allow`，意思是「今天可以考慮風險」，不是「買這一檔」。
 
-**所有訂單由人手動下。** 上游 [`swing-opportunity-daily`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/swing-opportunity-daily.yaml) 的 `manual_review` 把話說死了：訂單一律在券商手動輸入，不自動執行。Agent 的工作止於 GO / NO-GO。
+**所有訂單由人手動下。** 上游 [`swing-opportunity-daily`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/swing-opportunity-daily.yaml) 的 `manual_review` 講得斬釘截鐵：訂單一律在券商手動輸入，不自動執行。Agent 的工作止於 GO / NO-GO。
 
 **本書不提供投資建議。** 這裡談的是決策流程怎麼設計、閘門為什麼要 fail-closed，不是該買什麼。

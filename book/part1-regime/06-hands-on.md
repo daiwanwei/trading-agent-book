@@ -41,7 +41,7 @@ python3 skills/market-top-detector/scripts/market_top_detector.py \
   --put-call [VALUE] --put-call-date [YYYY-MM-DD] \
   --output-dir reports/
 ```
-`--breadth-50dma` 與 `--put-call` 是 SKILL.md 標成 `[REQUIRED]` 的兩項，script 本身不會自動抓，要先用 WebSearch 查到當天數字再填進 `[VALUE]`；200DMA 廣度預設自動從 TraderMonty CSV 抓。跳過這步，流程照樣往下走到 Step 4，只是少一份輸入。產出：`reports/market_top_<timestamp>.json` 與 `.md`。
+`--breadth-50dma` 與 `--put-call` 是 `SKILL.md` 標成 `[REQUIRED]` 的兩項，script 本身不會自動抓，要先用 WebSearch 查到當天數字再填進 `[VALUE]`；200DMA 廣度預設自動從 TraderMonty CSV 抓。跳過這步，流程照樣往下走到 Step 4，只是少一份輸入。產出：`reports/market_top_<timestamp>.json` 與 `.md`。
 
 **Step 4・收斂成姿態**（`decision_gate: true`）
 ```bash

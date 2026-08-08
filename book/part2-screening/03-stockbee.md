@@ -8,7 +8,7 @@
 
 ## 方法論
 
-三份 methodology 文件都把方法歸給同一個人。三份 SKILL.md 的 description 都用「Stockbee-style」稱呼這套語彙；momentum burst 與 exhaustion hammer 的 description 更進一步點名 `Pradeep Bonde`，EP 的 description 沒有點名，這個名字要到本文「When to Use」清單才出現。**原著 vs 實作。** 跟 2.1、2.2 不一樣的地方要先說清楚：VCP 的 `minervini_entry_rules.md` 列了 Minervini 兩本書當 Sources，CANSLIM 的 SKILL.md 明講計分系統「Adapted from IBD MarketSmith proprietary system」；這三支 Stockbee skill 的九份參考文件裡，沒有一份給出書名、文章或訪談出處，方法只以「Stockbee-style」「Pradeep Bonde」帶過，沒有更進一步的引用鏈——這裡沒有一本可具名的原著能拿來對照實作，唯一能驗證的落差，是方法論散文跟計分系統之間的落差，見下段 exhaustion hammer 的討論。
+三份 methodology 文件都把方法歸給同一個人。三份 `SKILL.md` 的 description 都用「Stockbee-style」稱呼這套語彙；momentum burst 與 exhaustion hammer 的 description 更進一步點名 `Pradeep Bonde`，EP 的 description 沒有點名，這個名字要到本文「When to Use」清單才出現。**原著 vs 實作。** 跟 2.1、2.2 不一樣的地方要先說清楚：VCP 的 `minervini_entry_rules.md` 列了 Minervini 兩本書當 Sources，CANSLIM 的 `SKILL.md` 明講計分系統「Adapted from IBD MarketSmith proprietary system」；這三支 Stockbee skill 的九份參考文件裡，沒有一份給出書名、文章或訪談出處，方法只以「Stockbee-style」「Pradeep Bonde」帶過，沒有更進一步的引用鏈——這裡沒有一本可具名的原著能拿來對照實作，唯一能驗證的落差，是方法論散文跟計分系統之間的落差，見下段 exhaustion hammer 的討論。
 
 `momentum_burst_methodology.md` 把核心假設寫成一句話：某些股票在一段區間收縮之後會炸出短而急的動能，真正有用的漲幅常發生在接下來幾個交易日，而非一段長期趨勢。它定義三種觸發家族：4% 突破——收盤價至少比前一日收盤高 4%，當日量高於前一日、且高於流動性下限；金額突破——收盤價減開盤價至少達到設定門檻，預設 $0.90，適合股價較高、百分比漲幅不到 4% 但金額本身有意義的股票；區間擴張——當日振幅大於前三個交易日的每一天，前一日振幅還沒被拉開，且量能確認這次擴張。
 
@@ -28,7 +28,7 @@ EP 吃三種輸入：Mode A 純催化劑/事件 JSON；Mode B 直接吃 `earning
 
 `swing-opportunity-daily.yaml` 的 `manual_review` 對兩支日常偵查隊各留了一條規則，序章已引過兩者共通的核心——輸出只當候選生成，這裡把各自不同的那一半攤開：momentum burst 要求圖表驗證與風險距離複核；exhaustion hammer 除了圖表驗證，還額外要求確認回檔不是被摧毀論點的新聞事件引發、並驗證到當日低點的風險。兩份 methodology 也各自列了「這支腳本不做什麼」：momentum burst 不下單、不保證後續跟進、不取代人工看圖、不驗證新聞或催化劑、不模擬盤中滑價或 level-2 流動性、不決定最終部位；exhaustion hammer 不下單、不建議自動執行、不驗證報價的即時新鮮度、不自己發掘催化劑或新聞、不取代圖表覆核或風險計算。兩支隊伍的共通點是：它們都只在乎價與量，新聞是誰的事完全沒交代。
 
-這正是 EP 存在的理由，但 EP 自己也把邊界劃得很清楚。SKILL.md 明講：這支 skill 不會自己找新聞——如果沒有人提供催化劑，要先用使用者慣用的新聞或研究流程蒐集事件脈絡；`skills-index.yaml` 對 `catalyst_events_json` 的註記重複同一件事：這是使用者提供或上游生成的催化劑紀錄，這支 skill 本身不發掘新聞。`ep_methodology.md` 補了更直接的一句：這支 skill 不決定買不買，只排序和分類候選；買進前要先過人工催化劑覆核、圖表驗證、風險部位計算三關。`catalyst_quality.md` 留了五個人工覆核問題：這是單日頭條還是站得住腳的重估？相對市場原本的預期，這件事意不意外？它有沒有改變營收、獲利、潛在市場、存續機率或機構認可度？事件發生前股價是不是已經走了一大段？EP 當日低點能不能當一個現實的停損？
+這正是 EP 存在的理由，但 EP 自己也把邊界劃得很清楚。`SKILL.md` 明講：這支 skill 不會自己找新聞——如果沒有人提供催化劑，要先用使用者慣用的新聞或研究流程蒐集事件脈絡；`skills-index.yaml` 對 `catalyst_events_json` 的註記重複同一件事：這是使用者提供或上游生成的催化劑紀錄，這支 skill 本身不發掘新聞。`ep_methodology.md` 補了更直接的一句：這支 skill 不決定買不買，只排序和分類候選；買進前要先過人工催化劑覆核、圖表驗證、風險部位計算三關。`catalyst_quality.md` 留了五個人工覆核問題：這是單日頭條還是站得住腳的重估？相對市場原本的預期，這件事意不意外？它有沒有改變營收、獲利、潛在市場、存續機率或機構認可度？事件發生前股價是不是已經走了一大段？EP 當日低點能不能當一個現實的停損？
 
 三支 skill 在 `skills-index.yaml` 裡都標成 `status: beta`，複核時值得多留一分餘地。`entry_exit_rules.md` 的實務提醒也適用在三支隊伍上：分數再高都不是獨立成立的買進理由，被拒的候選要留著，失敗案例是校正判讀直覺的材料。`handoff_rules.md` 對 `trader-memory-core` 的交代劃出同一條線：只登記通過人工複核、或刻意留在延遲觀察名單上的候選，不要把每一則低品質頭條都塞進論點庫——想做廣泛學習，另開一份模型書或研究紀錄。
 

@@ -12,7 +12,7 @@
 
 COT Index 極端值本身還要看「有多少人」撐著它。`shapiro-methodology.md` 特別提醒：兩個市場都能算出 95 分的擁擠度，一個可能是 10 個大額投機者撐出來的極端，另一個是 200 個——後者的群眾更廣、也更耐撐。`screen_cot_crowding.py` 因此把交易人數（`tradersNoncommLongAll`／`tradersNoncommShortAll`）跟未平倉量一起附進報告，避免只看單一分數就下判斷；`cot-index-calculation.md` 也點出這份資料只採用 CFTC 的 legacy report（非商業／商業／非申報三類），不用拆得更細的 disaggregated report——因為後者只涵蓋實體商品期貨，指數、利率、外匯這些金融期貨反而沒有，跟 Shapiro 原本鎖定投機大戶的框架對不上。
 
-**原著 vs 實作。** `shapiro-methodology.md` 自己的五步表——擁擠偵測、新聞失敗、價格行為確認、進場、出場——只把第一步標成「已自動化」，第二步以後全部寫著「No，Claude 用 WebSearch／看圖／`position-sizer`」。但這張表其實已經跟不上這個 repo 後來長出來的樣子：`news-reaction-failure-analyzer` 的 SKILL.md 明講自己實作的正是「Shapiro 流程的第二步」，用的是一套經 Monte Carlo 驗證過的統計檢定，不是人工讀新聞——第二步早就不是純手動了，只是承載這句話的文件沒有跟著更新。
+**原著 vs 實作。** `shapiro-methodology.md` 自己的五步表——擁擠偵測、新聞失敗、價格行為確認、進場、出場——只把第一步標成「已自動化」，第二步以後全部寫著「No，Claude 用 WebSearch／看圖／`position-sizer`」。但這張表其實已經跟不上這個 repo 後來長出來的樣子：`news-reaction-failure-analyzer` 的 `SKILL.md` 明講自己實作的正是「Shapiro 流程的第二步」，用的是一套經 Monte Carlo 驗證過的統計檢定，不是人工讀新聞——第二步早就不是純手動了，只是承載這句話的文件沒有跟著更新。
 
 ## 機制
 
@@ -41,7 +41,7 @@ flowchart TD
 
 ## 判讀與誤用
 
-擁擠不是訊號，是門檻。`cot-contrarian-detector` 的 Guardrails 把話說死：沒有新聞失敗跟價格行為兩步都確認，永遠不建議進場——第 2 步用統計檢定取代早期那條會在純雜訊裡誤判成立近半數時間的比例規則，本身就是「不能只看一步就下手」這條原則的又一個 fail-closed 實例。
+擁擠不是訊號，是門檻。`cot-contrarian-detector` 的 Guardrails 毫不含糊：沒有新聞失敗跟價格行為兩步都確認，永遠不建議進場——第 2 步用統計檢定取代早期那條會在純雜訊裡誤判成立近半數時間的比例規則，本身就是「不能只看一步就下手」這條原則的又一個 fail-closed 實例。
 
 COT 資料的週期限制也是據實寫死的：CFTC 每週五美東下午約三點半公布，內容是上週二收盤的建倉快照，發布當下就已經遲到三天以上，到下一次發布前最多遲到九天——`cot-contrarian-detector` 的 Guardrails 因此明講，這份資料永遠不能當即時訊號讀。COT 端點需要 FMP Premium+ 訂閱等級，免費層拿不到——跟前四節的 FMP 篩選器不一樣，這一步不是「有 API key 就能跑」，而是明確卡在付費層級。
 

@@ -8,8 +8,9 @@
 - [x] `book/part1-regime/05-exposure-posture.md`：「反向換算過」措辭可能被讀成代數反轉（實為獨立計算、方向相反），可再鬆一字——（M5 wave 1 完成）
 - [x] 序章「兩種出身」句未涵蓋 CPW→KDW 邊的 `prerequisite_workflows` 出處類別（無錯誤陳述，僅不窮盡）——（M5 wave 1 完成）
 - [x] 1.1 divergence 警告條件漏了 spread>20pp 分支——（M5 wave 1 完成）
-- [ ] 全書重複語感：「把話說死／講死」出現多次——（M5 wave 1/2 部分完成：序章與第二部三處已改（agent-week.md:35, part2/README.md:7, 01-minervini.md:29），README.md:31 與 05-shapiro.md:44 留待最終 fix wave）
+- [x] 全書重複語感：「把話說死／講死」出現多次——（M5 wave 1/2/最終 fix wave 全部完成：序章與第二部三處已改（agent-week.md:35, part2/README.md:7, 07-hands-on.md:69——先前結案時誤植成 01-minervini.md:29，已更正），README.md:31 與 05-shapiro.md:44 已於最終 fix wave 改寫；01-minervini.md:29 保留原話不動，是全書唯一刻意保留的一處）
 - [x] 3.3 的 TRADING_HALTED 引文可加註「斷路器實際不會輸出此值」——（M5 wave 3 完成）；3.2/實作章「唯一的腳本」可改「唯一的 CLI 入口」——（M5 wave 3 完成）
+- [ ] 未來勘誤：`book/part5-research/05-self-improvement.md:43` 還有一處裸 SKILL.md（該檔案本輪長度鎖定在 2,800 CJK 字，任何淨增字數的編輯都得延後）；COT 在 `part2-screening/README.md:19`、`05-shapiro.md:5` 與附錄 A／B 多處寫成單數「Commitment of Traders」，但附錄 D 詞彙表的正式定義是複數「Commitments of Traders」——一字之差，留待下次勘誤一併訂正
 
 ## M4（第五部）前置
 

@@ -2,13 +2,13 @@
 
 ## 場景
 
-5.2 留下的 `strategy_drafts/*.yaml`——那份 `core` 變體的 breakout 樣本，帶著 `stop_loss_pct: 0.07`、`take_profit_rr: 3.0`、`time_stop_days: 20`——輪到 `edge-strategy-reviewer` 接手。跑一次 `review_strategy_drafts.py --drafts-dir reports/edge_strategy_drafts/ --output-dir reports/`，資料夾裡多出一份 `review.yaml`：`summary` 底下是 `total`、`PASS`、`REVISE`、`REJECT`、`export_eligible` 五個計數；底下 `reviews` 陣列逐份草稿列出 `draft_id`、`verdict`、`confidence_score`、`export_eligible`、`findings`、`revision_instructions`。SKILL.md 把這支腳本的位置寫得直接——它是 `edge-strategy-designer` 產出物進匯出管線之前的最後一道品質關卡，Prerequisites 只要求草稿 YAML 檔案，外加 `Python 3.10+` 與 `PyYAML`。想更嚴格一點，還有一個 `--strict-export` 旗標：符合匯出資格的草稿只要背著任何一條 `warn`，判決就從可能的 `PASS` 降成 `REVISE`——多一道自己選擇加開的關卡，只為了守住真正要出管線的那一批。
+5.2 留下的 `strategy_drafts/*.yaml`——那份 `core` 變體的 breakout 樣本，帶著 `stop_loss_pct: 0.07`、`take_profit_rr: 3.0`、`time_stop_days: 20`——輪到 `edge-strategy-reviewer` 接手。跑一次 `review_strategy_drafts.py --drafts-dir reports/edge_strategy_drafts/ --output-dir reports/`，資料夾裡多出一份 `review.yaml`：`summary` 底下是 `total`、`PASS`、`REVISE`、`REJECT`、`export_eligible` 五個計數；底下 `reviews` 陣列逐份草稿列出 `draft_id`、`verdict`、`confidence_score`、`export_eligible`、`findings`、`revision_instructions`。`SKILL.md` 把這支腳本的位置寫得直接——它是 `edge-strategy-designer` 產出物進匯出管線之前的最後一道品質關卡，Prerequisites 只要求草稿 YAML 檔案，外加 `Python 3.10+` 與 `PyYAML`。想更嚴格一點，還有一個 `--strict-export` 旗標：符合匯出資格的草稿只要背著任何一條 `warn`，判決就從可能的 `PASS` 降成 `REVISE`——多一道自己選擇加開的關卡，只為了守住真正要出管線的那一批。
 
 ## 方法論
 
 八項準則各自算分，但判準不是單純加權平均及格。`review_criteria.md` 寫死一條硬規則：C1（Edge Plausibility）或 C2（Overfitting Risk）只要判到 `fail`，不管另外六項分數多高，直接 `REJECT`——這跟第三部斷路器面對好幾個檢查同時出狀況時只認最壞那一個結果的做法，是同一種脾氣：壞消息不會被好消息平均掉，一票就能否決。`confidence_score` 要跨過 70 分門檻才夠格拿 `PASS`，但門檻不是唯一條件——判準原句是「confidence_score >= 70 and no "fail" findings」，分數再高，只要背著一條 `fail`，照樣過不了關；跌破 35 分則不論其他，直接 `REJECT`；剩下的中間地帶才是 `REVISE`，附一份修正指示，等修完再送審一次。這條「一票否決加雙重條件」的判準，把研究這一端的紀律，套進跟第三部 fail-closed 閘門同一種形狀。
 
-`backtest-expert` 站在更早一步，把同一種懷疑態度寫進核心哲學——目標不是找紙上最賺的策略，是找壞得最少的策略；SKILL.md 給的時間分配是兩成拿來想點子，八成拿來想辦法打破它。`residual-edge-analyzer` 接在 `backtest-expert` 之後，SKILL.md 自己把定位寫成一句話：「Treat this as a falsification gate after backtest-expert, not as trade authorization」——它算出的四種狀態標籤，仍然可能被一個獨立的 `decision_eligibility` 攔下來：就算統計結果好看，只要資料來源、成本基準、樣本量或共線性任一項有未解的警告，判定照樣落回 `REVIEW_REQUIRED`——跟斷路器的 `PARTIAL` 資料品質同一個道理：把「不確定」和「確定沒事」分開處理，前者一律先擋。`strategy-pivot-designer` 則守在迭代迴圈的出口：`backtest-expert` 反覆調參數調到停滯，不代表可以無限調下去——停滯偵測會逼出一次結構性 pivot，不是繼續在同一組參數附近打轉。
+`backtest-expert` 站在更早一步，把同一種懷疑態度寫進核心哲學——目標不是找紙上最賺的策略，是找壞得最少的策略；`SKILL.md` 給的時間分配是兩成拿來想點子，八成拿來想辦法打破它。`residual-edge-analyzer` 接在 `backtest-expert` 之後，`SKILL.md` 自己把定位寫成一句話：「Treat this as a falsification gate after backtest-expert, not as trade authorization」——它算出的四種狀態標籤，仍然可能被一個獨立的 `decision_eligibility` 攔下來：就算統計結果好看，只要資料來源、成本基準、樣本量或共線性任一項有未解的警告，判定照樣落回 `REVIEW_REQUIRED`——跟斷路器的 `PARTIAL` 資料品質同一個道理：把「不確定」和「確定沒事」分開處理，前者一律先擋。`strategy-pivot-designer` 則守在迭代迴圈的出口：`backtest-expert` 反覆調參數調到停滯，不代表可以無限調下去——停滯偵測會逼出一次結構性 pivot，不是繼續在同一組參數附近打轉。
 
 ## 機制
 
@@ -16,7 +16,7 @@
 
 `overfitting_checklist.md` 把過擬合的紅旗歸成五類：條件數過多（10 條起是警戒線，12 條以上幾乎必然過擬合）；門檻寫得太精確（小數點門檻像「RSI > 33.5」「volume > 1.73 * avg」，暗示是照歷史資料硬湊出來的，「RSI > 30」「rel_volume >= 1.5」這種整數或半步門檻才算合理）；regime 過窄，只在單一市場狀態下設計卻沒跨 regime 驗證；估計樣本量過低，年度不到 10 次機會就統計上不可靠；出場參數不對稱，停損寬過 15% 暗示進場時機本身有問題，報酬風險比低於 1.5 則需要不切實際的高勝率才能打平。對應的緩解建議同樣列了五條：把條件數砍到只剩必要篩選；改用整數或行為意義明確的門檻（像 RSI 30/70、50 日均線）；跨多個 regime 與時間段驗證；把年度樣本量拉到 30 次以上；停損控制在 10% 以內，目標抓 2:1 以上的報酬風險比。
 
-`backtest-expert` 對樣本內外紀律的要求更硬。走前向分析（walk-forward）分四步：在訓練期（例如第一到三年）最佳化參數，拿到驗證期（第四年）測試，再往前滾動一次，最後比較樣本內與樣本外表現；警訊寫得明白——樣本外表現低於樣本內的一半、需要頻繁重新最佳化、參數在不同期間劇烈變動，三者任一出現都算危險信號。樣本量門檻分三級：絕對底線 30 筆交易，理想值 100 筆，高信心水準要 200 筆以上；測試年期同樣分級，最低 5 年，理想 10 年以上，還要跨過至少一個完整市場週期。SKILL.md 把研發時間比例寫成一句口訣：兩成生成點子，八成拿去打破它。
+`backtest-expert` 對樣本內外紀律的要求更硬。走前向分析（walk-forward）分四步：在訓練期（例如第一到三年）最佳化參數，拿到驗證期（第四年）測試，再往前滾動一次，最後比較樣本內與樣本外表現；警訊寫得明白——樣本外表現低於樣本內的一半、需要頻繁重新最佳化、參數在不同期間劇烈變動，三者任一出現都算危險信號。樣本量門檻分三級：絕對底線 30 筆交易，理想值 100 筆，高信心水準要 200 筆以上；測試年期同樣分級，最低 5 年，理想 10 年以上，還要跨過至少一個完整市場週期。`SKILL.md` 把研發時間比例寫成一句口訣：兩成生成點子，八成拿去打破它。
 
 `residual-edge-analyzer` 拆的是全書最技術的一段，但骨架其實是一個生活化的問題：一檔策略的報酬，有多少只是跟著宣告好的基準（大盤、動能、等權重或使用者自訂因子）一起漲跌，有多少是基準之外自己多出來的部分？`methodology.md` 給的模型是 `r_t = alpha + beta * f_t + epsilon_t`——策略報酬拆成截距 `alpha`、對每個基準的載荷 `beta`，加上殘差 `epsilon`。先扣掉 beta 那部分跟著基準走的報酬，剩下才問：這個 `alpha`（年化後）相對於剩下的殘差波動（同樣年化），比值站不站得住——這是「殘差 edge 比率」，回答的是扣掉大盤這股水流之後，這艘船自己划出去多遠、划得穩不穩。因為報酬本身常帶自相關與變異數不齊一，普通最小平方法算出的標準誤差容易低估風險、讓 t 值看起來比實際更顯著；`methodology.md` 因此堅持用 HAC（Newey-West）調整過的標準誤差，`hac_lags: "auto"` 用 `floor(4 * (n/100)^(2/9))` 這條公式決定要往回看幾期。滾動穩定度的檢查一樣守著 fail-closed 的脾氣：預設至少要 12 個滾動窗才報告，只有 1 個窗的話，正 alpha 比例只會是 0 或 1，這個數字完全不帶資訊量，直接判 `RESIDUAL_FRAGILE`，不會被拿來充當證據。`RESIDUAL_EDGE`、`BASELINE_EXPLAINED`、`RESIDUAL_FRAGILE`、`INSUFFICIENT_EVIDENCE` 這四種狀態標籤是給統計結果貼的診斷標籤，`decision_eligibility` 才是真正決定能不能拿去做決策的閘門，兩者故意分開讀。
 
