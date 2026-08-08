@@ -23,9 +23,9 @@ python3 skills/drawdown-circuit-breaker/scripts/check_circuit_breaker.py \
   --account-size 100000 \
   --output-dir reports/
 ```
-`--state-dir` 預設就是 `state/theses`、`--output-dir` 預設就是 `reports/`，兩個旗標其實可以省略，這裡照 SKILL.md 慣例寫出來。產出：`reports/circuit_breaker_decision_<timestamp>.json` 與同名 `.md`。非 `TRADING_ALLOWED` 就此打住，第 2 步的篩選器不會被叫起來。
+`--state-dir` 預設就是 `state/theses`、`--output-dir` 預設就是 `reports/`，兩個旗標其實可以省略，這裡照 `SKILL.md` 慣例寫出來。產出：`reports/circuit_breaker_decision_<timestamp>.json` 與同名 `.md`。非 `TRADING_ALLOWED` 就此打住，第 2 步的篩選器不會被叫起來。
 
-**Step 7・圖表決策閘**（`decision_gate: true`，決策問題：哪些候選有乾淨的週線結構、通過人工複核？）這一步在 `swing-opportunity-daily` 裡沒有 CLI——主路徑是把候選的週線圖上傳給 Claude，走 3.2 節說過的純圖表判讀，沒有腳本會替它決定。`technical-analyst` 唯一的 script `check_weekly_price_action.py` 屬於另一個附加模式（Shapiro Step 3 逆勢確認），跟這一步的候選驗證無關，但作為「沒圖時的稽核備援」值得先記住呼叫方式：
+**Step 7・圖表決策閘**（`decision_gate: true`，決策問題：哪些候選有乾淨的週線結構、通過人工複核？）這一步在 `swing-opportunity-daily` 裡沒有 CLI——主路徑是把候選的週線圖上傳給 Claude，走 3.2 節說過的純圖表判讀，沒有腳本會替它決定。`technical-analyst` 唯一的 CLI 入口 `check_weekly_price_action.py` 屬於另一個附加模式（Shapiro Step 3 逆勢確認），跟這一步的候選驗證無關，但作為「沒圖時的稽核備援」值得先記住呼叫方式：
 ```bash
 python3 skills/technical-analyst/scripts/check_weekly_price_action.py \
   --symbol BT --direction CROWDED_LONG --as-of 2026-07-15 \
@@ -83,7 +83,7 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 
 ## 產出解讀
 
-`circuit_breaker_decision`（SKILL.md 範例）：
+`circuit_breaker_decision`（`SKILL.md` 範例）：
 ```json
 {
   "recommendation": "COOLDOWN",
@@ -95,7 +95,7 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 }
 ```
 
-`position_sizing`（實跑上面 Step 8 那條指令得到的結果——套了 `--max-position-pct`/`--max-sector-pct`/`--current-sector-exposure` 三個組合限制，產業曝險 51 股比純風險算出的 153 股更緊，成為 `binding_constraint`；SKILL.md 另有一個不帶組合限制、`final_recommended_shares: 153`、`binding_constraint: null` 的基礎範例，那是沒傳這三個旗標時的結果）：
+`position_sizing`（實跑上面 Step 8 那條指令得到的結果——套了 `--max-position-pct`/`--max-sector-pct`/`--current-sector-exposure` 三個組合限制，產業曝險 51 股比純風險算出的 153 股更緊，成為 `binding_constraint`；`SKILL.md` 另有一個不帶組合限制、`final_recommended_shares: 153`、`binding_constraint: null` 的基礎範例，那是沒傳這三個旗標時的結果）：
 ```json
 {
   "final_recommended_shares": 51,
@@ -106,7 +106,7 @@ python3 skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline.py \
 }
 ```
 
-`pre_trade_discipline_decision`（依 script 實際欄位重建，SKILL.md 未附完整範例）：
+`pre_trade_discipline_decision`（依 script 實際欄位重建，`SKILL.md` 未附完整範例）：
 ```json
 {
   "overall_decision": "GO",

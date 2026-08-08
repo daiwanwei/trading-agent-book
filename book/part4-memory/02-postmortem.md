@@ -2,7 +2,7 @@
 
 ## 場景
 
-`trade-memory-loop` 是逐筆觸發的：一個部位收尾，不論是全部出清還是只賣掉一部分，這條迴圈就會被叫起來；還沒平倉的論點不算數，那是 `trader-memory-core` 該直接處理的事，跟這條迴圈無關。第 1 步先把結果收斂成 `closed_thesis_record`，`decision_gate` 是 `false`——4.1 已經講過，這一步只負責記錄，不做判斷。真正的判斷從第 2 步才開始：`signal-postmortem` 接手 `closed_thesis_record`，`decision_gate` 是 `true`。這一節要講的，就是這一步實際在做什麼。
+`trade-memory-loop` 是逐筆觸發的：一個部位收尾，不論是全部出清還是只賣掉一部分，這條迴圈就會被叫起來；還沒平倉的論點不算數，那是 `trader-memory-core` 該直接處理的事，跟這條迴圈無關。第 1 步先把結果收斂成 `closed_thesis_record`，`decision_gate` 是 `false`——README 開場已經講過，這一步只負責記錄，不做判斷。真正的判斷從第 2 步才開始：`signal-postmortem` 接手 `closed_thesis_record`，`decision_gate` 是 `true`。這一節要講的，就是這一步實際在做什麼。
 
 ## 方法論
 
@@ -16,13 +16,13 @@
 
 `signal-postmortem` 自己的分類軸，跟 `trade-memory-loop` 拿它來做的事，其實是兩把不同的尺，容易被誤認成同一件事。
 
-`SKILL.md` 與 `outcome-classification.md` 定義的，是訊號準確度這把尺：`postmortem_recorder.py` 拿 `predicted_direction` 跟 5 日、20 日的 `realized_returns` 對照，判進四個正式類別之一——`TRUE_POSITIVE`（方向猜對）、`FALSE_POSITIVE`（方向猜錯，依虧損幅度再分 `MILD` 與 `SEVERE`，跌破 −2% 才算 `SEVERE`）、`MISSED_OPPORTUNITY`（訊號沒被採用，但事後看報酬達到 2% 以上）、`REGIME_MISMATCH`（訊號失準的主因是持有期間市場 regime 真的換了，不是判斷本身出錯）；報酬絕對值低於 0.5% 記作 `NEUTRAL`——這仍是走完整套流程後的正式分類，只是不計入 `TRUE_POSITIVE`／`FALSE_POSITIVE` 的命中率統計；只有訊號根本沒被採用、事後看也不會獲利，才歸 `SKIPPED`，直接省了整套 postmortem。這一把尺答的是「方向猜對了沒有」。
+`SKILL.md` 與 `outcome-classification.md` 定義的，是訊號準確度這把尺：`postmortem_recorder.py` 拿 `predicted_direction` 跟 5 日、20 日的 `realized_returns` 對照，判進四個正式類別之一——`TRUE_POSITIVE`（方向猜對）、`FALSE_POSITIVE`（方向猜錯，依虧損幅度再分 `MILD` 與 `SEVERE`，跌破 −2% 才算 `SEVERE`）、`MISSED_OPPORTUNITY`（訊號沒被採用，但事後看報酬達到 2% 以上）、`REGIME_MISMATCH`（訊號失準的主因是持有期間市場 regime 真的換了，不是判斷本身出錯）；報酬絕對值低於 0.5% 記作 `NEUTRAL`——這仍是走完整套流程後的正式分類，只是不計入 `TRUE_POSITIVE`／`FALSE_POSITIVE` 的命中率統計；只有訊號根本沒被採用、事後看也不會獲利，才歸 `SKIPPED`，直接省了整套 `postmortem`。這一把尺答的是「方向猜對了沒有」。
 
 `trade-memory-loop` 第 2 步要的不是這件事。它的 `decision_question` 問的是上一段那組四選一的根因——假設本身、下單執行、大盤風向，還是機率，產出 `postmortem_findings`——名字對不上 `outcome_category` 的四個類別，量的也不是同一個維度：一筆 `TRUE_POSITIVE` 背後完全可能只是猜對了方向的運氣；一筆 `FALSE_POSITIVE` 背後的論點也可能完全站得住，只是市場環境變了。這正是 `REGIME_MISMATCH` 被單獨列出來、不併進 `FALSE_POSITIVE` 的理由——把「方向錯了」跟「判斷本身錯了」分開算，兩份文件在各自的層級上，其實守的是同一種分寸。
 
-`postmortem_findings` 產出後，`downstream_hints` 指向 `monthly-performance-review`，供月度做模式層級的彙整；在 `trade-memory-loop` 內部，它還跟 `closed_thesis_record` 一起餵給可選的第 3 步——`trade-performance-coach`，把 findings 轉成下一個交易時段可以遵循的 `next_session_operating_rules`。哪一條規則該貼上哪個標籤，留給 4.3 整章展開，這裡先記下它是 `postmortem_findings` 的下一站。
+`postmortem_findings` 產出後，`downstream_hints` 指向 `monthly-performance-review`，供月度做模式層級的彙整；在 `trade-memory-loop` 內部，它還跟 `closed_thesis_record` 一起餵給可選的第 3 步——`trade-performance-coach`，把 `findings` 轉成下一個交易時段可以遵循的 `next_session_operating_rules`。哪一條規則該貼上哪個標籤，留給 4.3 整章展開，這裡先記下它是 `postmortem_findings` 的下一站。
 
-跟這條路徑平行、服務對象卻不同的，是 `feedback-integration.md` 記載的另一條迴路：`postmortem_analyzer.py` 從累積的 postmortem 記錄產出 `weight_feedback.json`，餵給 `edge-signal-aggregator` 校準每個來源 skill 的權重——樣本數不到 20 不動、權重被夾在 0.3 到 2.0 之間，不完全關掉一個 skill，也不無限放大它；另一份 `skill_improvement_backlog.yaml` 流向 skill 改進迴圈，樣本數門檻降到 15。這兩份輸出服務的是所有 skill 產生的訊號整體，跟 `trade-memory-loop` 這裡專門對單一已平倉論點做根因判斷，是同一個 skill 底下兩種不必混為一談的用法。
+跟這條路徑平行、服務對象卻不同的，是 `feedback-integration.md` 記載的另一條迴路：`postmortem_analyzer.py` 從累積的 `postmortem` 記錄產出 `weight_feedback.json`，餵給 `edge-signal-aggregator` 校準每個來源 skill 的權重——樣本數不到 20 不動、權重被夾在 0.3 到 2.0 之間，不完全關掉一個 skill，也不無限放大它；另一份 `skill_improvement_backlog.yaml` 流向 skill 改進迴圈，樣本數門檻降到 15。這兩份輸出服務的是所有 skill 產生的訊號整體，跟 `trade-memory-loop` 這裡專門對單一已平倉論點做根因判斷，是同一個 skill 底下兩種不必混為一談的用法。
 
 `outcome-classification.md` 還留了兩種容易被含糊帶過的邊界狀況，要求老實記下來，不能省略。出場早於原本設定的持有天數時，報酬要用實際持有天數換算，並標記 `early_exit` 為 `true`，附上 `early_exit_reason`——停損出場、達標出場，或臨場自行決定；股價因隔夜消息跳空開盤時，另外記下 `gap_event` 與 `gap_pct`，不讓跳空造成的落差跟正常走勢的報酬混在一起計算。這兩個欄位存在的理由，跟四選一的根因分類是同一套邏輯：與其把結果硬套進一個乾淨好看的敘事，不如把當時真實發生的條件都留下痕跡。
 

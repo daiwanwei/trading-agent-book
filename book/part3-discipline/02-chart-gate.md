@@ -8,7 +8,7 @@ step 7 跟前面五步不一樣的地方，不在於篩得更嚴，而在於篩�
 
 ## 方法論
 
-`technical-analyst` SKILL.md 開頭把定位寫得很窄：「analyzing weekly price charts... Use this skill when the user provides chart images」。Prerequisites 只有一條實質要求——「User must provide weekly timeframe chart images for analysis」——旁邊直接註明「No API Keys Required: This skill analyzes user-provided images; no external data fetches」。`technical_analysis_framework.md` 的 Core Principles 第三條重申同一件事：「All analysis uses weekly charts for medium to long-term perspective」。週線是刻意的選擇，不是隨手用的時框——短天期的雜訊被濾掉，留下的是能撐得住一筆波段交易的結構。
+`technical-analyst` 的 `SKILL.md` 開頭把定位寫得很窄：「analyzing weekly price charts... Use this skill when the user provides chart images」。Prerequisites 只有一條實質要求——「User must provide weekly timeframe chart images for analysis」——旁邊直接註明「No API Keys Required: This skill analyzes user-provided images; no external data fetches」。`technical_analysis_framework.md` 的 Core Principles 第三條重申同一件事：「All analysis uses weekly charts for medium to long-term perspective」。週線是刻意的選擇，不是隨手用的時框——短天期的雜訊被濾掉，留下的是能撐得住一筆波段交易的結構。
 
 框架文件把判讀拆成幾個面向：趨勢（用高點/低點是墊高還是走低來判斷方向，配合均線排列判斷強弱）、支撐壓力（同一價位要有 2-3 次觸及才算數，跌破的支撐可能反過來變成壓力）、均線（20 週、50 週、200 週三條，看價格站在哪一側、均線本身的斜率，以及有沒有出現黃金交叉或死亡交叉）、成交量（價漲量增才是健康確認，價漲量縮是警訊）、型態（反轉如 hammer、engulfing，或延續如旗形、三角），最後綜合成 2-4 個機率情境，機率總和要求等於 100%。這套語彙本身沒有替 step 7 定義任何及格線——它只是 Claude 判讀一張圖時共用的詞彙表。
 
@@ -22,15 +22,15 @@ step 7 跟前面五步不一樣的地方，不在於篩得更嚴，而在於篩�
 
 `manual_review` 另有一條更直白的規則：篩選器通過但週線不明確的候選一律否決，即使 screener 已經放行。這句話界定了這一步的權限邊界——它從不新增候選，只從上游五個篩子已經給出的名單裡刪人。
 
-判讀由誰做、用什麼工具做，SKILL.md 分得很清楚。`technical-analyst` 唯一的腳本 `scripts/check_weekly_price_action.py`，屬於一個完全獨立、附加式的「Contrarian Confirmation Mode（Shapiro Step 3）」——只在明確要求逆勢確認時才啟動，Guardrails 明講「the existing chart-analysis workflow above is unchanged」。在那個模式底下，圖表仍是主要輸入，腳本只是「chart-primary, script-fallback」裡的備援：沒有圖可讀、或想要一個可稽核的確定性結果時才會跑它。`swing-opportunity-daily` 第 7 步用的是前者，也是唯一一種——純圖表分析工作流。換句話說，`validated_setups` 這份名單是 Claude 一張一張讀圖判讀出來的，背後沒有任何演算法腳本替它做篩選。
+判讀由誰做、用什麼工具做，`SKILL.md` 分得很清楚。`technical-analyst` 唯一的 CLI 入口 `scripts/check_weekly_price_action.py`，屬於一個完全獨立、附加式的「Contrarian Confirmation Mode（Shapiro Step 3）」——只在明確要求逆勢確認時才啟動，Guardrails 明講「the existing chart-analysis workflow above is unchanged」。在那個模式底下，圖表仍是主要輸入，腳本只是「chart-primary, script-fallback」裡的備援：沒有圖可讀、或想要一個可稽核的確定性結果時才會跑它。`swing-opportunity-daily` 第 7 步用的是前者，也是唯一一種——純圖表分析工作流。換句話說，`validated_setups` 這份名單是 Claude 一張一張讀圖判讀出來的，背後沒有任何演算法腳本替它做篩選。
 
 ## 判讀與誤用
 
 這一步的本質是否決權。它不生產候選——五個上游 skill 已經把候選生出來了；它能做的唯一動作是刪除。把它想成一個篩子而不是一台生成器，是理解 pipeline 為什麼在這裡放一個 `decision_gate: true` 的關鍵：在 step 1 到 step 7 之中，只有 step 1 的斷路器與 step 7 這裡的 gate 標成 true，中間五個候選生成步驟（step 2 到 6）全部是 false。
 
-「篩選器通過但週線不明確者一律否決」這句規則，字面上看很嚴苛——沒有「先觀察一天再說」的選項。但正是這種沒有例外的措辭，讓它比較安全。「不明確」本身不是一種等待補完的資訊缺口，而是判讀當下就存在的證據：結構看不清楚，往往代表底部還沒走完、或突破還沒確認，多等一天不會讓圖變乾淨，只會讓人在等待裡悄悄說服自己看見了原本不存在的訊號。SKILL.md 的 Objectivity Requirements 早就把這條防線寫進分析師的行為準則——「Express uncertainty clearly when signals are ambiguous」；`decision_question` 做的事，是把這份誠實的不確定，直接翻譯成一個可執行的否決，不留給交易者用意志力去填補的空間。
+「篩選器通過但週線不明確者一律否決」這句規則，字面上看很嚴苛——沒有「先觀察一天再說」的選項。但正是這種沒有例外的措辭，讓它比較安全。「不明確」本身不是一種等待補完的資訊缺口，而是判讀當下就存在的證據：結構看不清楚，往往代表底部還沒走完、或突破還沒確認，多等一天不會讓圖變乾淨，只會讓人在等待裡悄悄說服自己看見了原本不存在的訊號。`SKILL.md` 的 Objectivity Requirements 早就把這條防線寫進分析師的行為準則——「Express uncertainty clearly when signals are ambiguous」；`decision_question` 做的事，是把這份誠實的不確定，直接翻譯成一個可執行的否決，不留給交易者用意志力去填補的空間。
 
-這裡還有一個容易被誤讀的例外。`technical-analyst` 的核心原則之一是「Pure Chart Analysis」——只看圖，不引入新聞、基本面或市場情緒，SKILL.md 與框架文件都把這條原則寫在最前面。但 exhaustion hammer 那道額外檢查，要求判斷回檔是不是由摧毀論點的新聞事件引發——這件事無法只靠盯著 K 線回答。把「純圖表分析」套用到這一項檢查上、拒絕引入任何外部脈絡，會誤解 step 7 真正的要求：這道 gate 對大多數候選堅持圖表獨立判讀，唯獨對 exhaustion hammer 明確容許、甚至要求跨出圖表去核對新聞脈絡。
+這裡還有一個容易被誤讀的例外。`technical-analyst` 的核心原則之一是「Pure Chart Analysis」——只看圖，不引入新聞、基本面或市場情緒，`SKILL.md` 與框架文件都把這條原則寫在最前面。但 exhaustion hammer 那道額外檢查，要求判斷回檔是不是由摧毀論點的新聞事件引發——這件事無法只靠盯著 K 線回答。把「純圖表分析」套用到這一項檢查上、拒絕引入任何外部脈絡，會誤解 step 7 真正的要求：這道 gate 對大多數候選堅持圖表獨立判讀，唯獨對 exhaustion hammer 明確容許、甚至要求跨出圖表去核對新聞脈絡。
 
 `technical-analyst` 還有另一條完全不同的路徑：在 Shapiro 逆勢流程第 3 步，同一張週線圖被拿來確認的不是突破結構，而是價格行為的反轉訊號（見 `contrarian-confirmation-checklist.md`）——這條路徑跟本章的候選驗證用途無關，留到第二部 2.5 再展開。
 
