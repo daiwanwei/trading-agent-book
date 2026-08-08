@@ -3,6 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import pytest
+
 from generate_appendix import (
     load_skills_index,
     load_workflows,
@@ -73,3 +75,30 @@ def test_main_errors_on_missing_upstream(tmp_path, capsys):
     code = main(["--upstream", str(tmp_path / "nope"), "--output", str(tmp_path)])
     assert code == 1
     assert "upstream not found" in capsys.readouterr().err
+
+
+def test_render_skills_appendix_fails_closed_on_unknown_category():
+    index = load_skills_index(FIXTURE)
+    index["skills"].append({
+        "id": "ghost-skill", "display_name": "Ghost", "category": "no-such-cat",
+        "summary": "x", "timeframe": "daily", "difficulty": "beginner", "integrations": [],
+    })
+    with pytest.raises(ValueError, match="ghost-skill"):
+        render_skills_appendix(index, "abc1234")
+
+
+def test_pipe_escaped_in_cells():
+    index = load_skills_index(FIXTURE)
+    index["skills"][0]["summary"] = "has | pipe"
+    out = render_skills_appendix(index, "abc1234")
+    assert "has \\| pipe" in out
+
+
+def test_main_errors_on_missing_workflows_dir(tmp_path, capsys):
+    up = tmp_path / "up"
+    up.mkdir()
+    import shutil
+    shutil.copy(FIXTURE / "skills-index.yaml", up / "skills-index.yaml")
+    code = main(["--upstream", str(up), "--output", str(tmp_path / "o")])
+    assert code == 1
+    assert "workflows" in capsys.readouterr().err

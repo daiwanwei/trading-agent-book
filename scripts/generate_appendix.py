@@ -18,9 +18,17 @@ def load_skills_index(upstream: Path) -> dict:
         return yaml.safe_load(f)
 
 
+def _md_escape(text: str) -> str:
+    """Escape pipe characters for Markdown table cells."""
+    return str(text).replace("|", "\\|")
+
+
 def load_workflows(upstream: Path) -> list:
+    workflows_dir = upstream / "workflows"
+    if not workflows_dir.is_dir():
+        raise FileNotFoundError(f"workflows directory not found at {workflows_dir}")
     flows = []
-    for path in sorted((upstream / "workflows").glob("*.yaml")):
+    for path in sorted(workflows_dir.glob("*.yaml")):
         with open(path, encoding="utf-8") as f:
             flows.append(yaml.safe_load(f))
     return sorted(flows, key=lambda w: w["id"])
@@ -57,6 +65,7 @@ def render_skills_appendix(index: dict, upstream_commit: str) -> str:
         f"共 {len(index['skills'])} 個 skills，依分類排列。"
         "本頁由 `scripts/generate_appendix.py` 自動生成，請勿手動編輯。",
     ]
+    rendered_skill_ids = []
     for category in index["categories"]:
         cat_skills = [s for s in index["skills"] if s["category"] == category]
         if not cat_skills:
@@ -69,12 +78,25 @@ def render_skills_appendix(index: dict, upstream_commit: str) -> str:
             "|---|---|---|---|---|",
         ]
         for skill in cat_skills:
+            rendered_skill_ids.append(skill["id"])
             link = f"[{skill['display_name']}]({UPSTREAM_URL}/tree/main/skills/{skill['id']})"
-            summary = " ".join(str(skill.get("summary", "")).split())
+            summary = _md_escape(" ".join(str(skill.get("summary", "")).split()))
             lines.append(
-                f"| {link} | {summary} | {skill.get('timeframe', '—')} "
-                f"| {skill.get('difficulty', '—')} | {_api_cell(skill)} |"
+                f"| {link} | {summary} | {_md_escape(str(skill.get('timeframe', '—')))} "
+                f"| {_md_escape(str(skill.get('difficulty', '—')))} | {_md_escape(_api_cell(skill))} |"
             )
+
+    # Fail-closed: check that all skills were rendered
+    all_skill_ids = {s["id"] for s in index["skills"]}
+    rendered_ids = set(rendered_skill_ids)
+    uncovered_ids = all_skill_ids - rendered_ids
+    if uncovered_ids:
+        uncovered_with_cats = []
+        for skill in index["skills"]:
+            if skill["id"] in uncovered_ids:
+                uncovered_with_cats.append(f"{skill['id']} ({skill['category']})")
+        raise ValueError(f"Uncovered skills in render: {', '.join(uncovered_with_cats)}")
+
     return "\n".join(lines) + "\n"
 
 
@@ -109,7 +131,7 @@ def render_workflows_appendix(workflows: list, upstream_commit: str) -> str:
             gate = "✅" if step.get("decision_gate") else ""
             opt_mark = "（可選）" if step.get("optional") else ""
             lines.append(
-                f"| {step['step']} | {step['name']}{opt_mark} "
+                f"| {step['step']} | {_md_escape(step['name'])}{opt_mark} "
                 f"| `{step.get('skill', '—')}` | {gate} |"
             )
     return "\n".join(lines) + "\n"
@@ -133,7 +155,11 @@ def main(argv=None) -> int:
 
     commit = get_upstream_commit(args.upstream)
     index = load_skills_index(args.upstream)
-    workflows = load_workflows(args.upstream)
+    try:
+        workflows = load_workflows(args.upstream)
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "a-skills-reference.md").write_text(
         render_skills_appendix(index, commit), encoding="utf-8"
