@@ -4,7 +4,7 @@
 
 [`swing-opportunity-daily`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/swing-opportunity-daily.yaml) 把這個問題切成第 2 到第 6 步，五個步驟，同時攤開。第 2 步 `vcp-screener` 是唯一標成必跑的；第 3、4 步的 `stockbee-momentum-burst-screener`、`stockbee-exhaustion-hammer-screener`，第 5 步的 `canslim-screener`，第 6 步的 `theme-detector`，全部是 `optional`。跳過任何一個，流程照樣往下走，只是第 7 步能驗證的候選少一份來源。這五步不是接力，是同時派出去的五支偵查隊，各自用不同的方法在同一片市場裡找目標。
 
-而 YAML 對這幾步輸出的態度異常一致：不管哪一個 screener 吐出多少候選，`manual_review` 都把話講死了——這是候選生成，不是訊號。真正的判斷留給第三部的週線驗證閘；這裡只負責把候選攤開。
+而 YAML 對這幾步輸出的態度異常一致：不管哪一個 screener 吐出多少候選，`manual_review` 一律定調——這是候選生成，不是訊號。真正的判斷留給第三部的週線驗證閘；這裡只負責把候選攤開。
 
 ## 本部地圖
 
@@ -14,9 +14,9 @@
 
 **2.3 Stockbee：動能三部曲**——對應第 3、4 步，兩個都可選。`stockbee-momentum-burst-screener` 抓動能剛爆發的股票，`stockbee-exhaustion-hammer-screener` 反過來抓衰竭後的反手；一順一逆，是同一套方法論對同一種現象的兩種讀法。
 
-**2.4 Kanchi：存股的紀律**——不在 `swing-opportunity-daily` 裡。它有自己的週末 workflow，[`kanchi-dividend-weekly`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/kanchi-dividend-weekly.yaml)，找的不是波段候選，是值得長期持有的美股配息標的，五步精查，決策閘 fail-closed。
+**2.4 Kanchi：存股的紀律**——不在 `swing-opportunity-daily` 裡。它有自己的週末 workflow，[`kanchi-dividend-weekly`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/kanchi-dividend-weekly.yaml)：找的不是波段候選，而是值得長期持有的美股配息標的——五步精查，決策閘 fail-closed。
 
-**2.5 Shapiro：站在人群的對面**——同樣不在 `swing-opportunity-daily` 裡，但分家分得更徹底。[`shapiro-contrarian`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/shapiro-contrarian.yaml) 連資產類別都換了：篩的是約六十五個期貨市場的 COT 投機部位擁擠度，只有在週五 CFTC 報告公布後才跑。從擁擠度篩選、新聞反應驗證、週線反轉確認，到 `contrarian-setup-gate` 整合判定與論點登記，五道決策閘一路自成一局，沒有一步借用 `swing-opportunity-daily` 的任何步驟。Kanchi 至少還在美股裡找標的；Shapiro 連市場都換了。
+**2.5 Shapiro：站在人群的對面**——同樣不在 `swing-opportunity-daily` 裡，但分家分得更徹底。[`shapiro-contrarian`](https://github.com/tradermonty/claude-trading-skills/blob/main/workflows/shapiro-contrarian.yaml) 連資產類別都換了：篩的是約六十五個期貨市場的 COT（Commitment of Traders）投機部位擁擠度，只有在週五 CFTC 報告公布後才跑。從擁擠度篩選、新聞反應驗證、週線反轉確認，到 `contrarian-setup-gate` 整合判定與論點登記，五道決策閘一路自成一局，沒有一步借用 `swing-opportunity-daily` 的任何步驟。Kanchi 至少還在美股裡找標的；Shapiro 連市場都換了。
 
 **2.6 事件驅動衛星**——對應第 6 步，可選。`theme-detector` 做的是主題層面的交叉比對，替前面幾支隊伍的候選再多加一層篩子；它本身不是一支獨立的主力偵查隊，是衛星。
 

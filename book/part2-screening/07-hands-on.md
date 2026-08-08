@@ -19,7 +19,7 @@
 ```bash
 python3 skills/vcp-screener/scripts/screen_vcp.py --output-dir reports/
 ```
-不傳 `--universe` 就是預設抓 S&P 500 前 100 名候選；`--output-dir` 本來就預設 `reports/`，這裡照慣例寫出來。產出：`reports/vcp_screener_<timestamp>.json` 與同名 `.md`，寫進 `vcp_candidates`。五步裡唯一不是 `optional: true` 的一步，跳過它，第 7 步能驗證的候選清單裡會少掉唯一保證存在的那一份。
+不傳 `--universe` 就是預設先抓齊整個 S&P 500，粗篩排序後截斷到前 100 名候選（`--max-candidates` 預設 100）；`--output-dir` 本來就預設 `reports/`，這裡照慣例寫出來。產出：`reports/vcp_screener_<timestamp>.json` 與同名 `.md`，寫進 `vcp_candidates`。五步裡唯一不是 `optional: true` 的一步，跳過它，第 7 步能驗證的候選清單裡會少掉唯一保證存在的那一份。
 
 **Step 3・Stockbee 動能爆發（optional）** 這隊在找什麼：動能剛炸開、4% 突破或區間擴張的股票。
 ```bash
@@ -66,7 +66,7 @@ Step 2、3、4、5 都需要 `FMP_API_KEY`——VCP 與 CANSLIM 沒有離線路�
 ```
 `canslim_screener` 用一樣的 `symbol` 與 `composite_score`，但等級欄位叫 `rating`（Exceptional+／Exceptional／Strong 等七級），沒有 `execution_state` 這個概念；兩支 Stockbee 篩子把合成分數欄位改叫 `setup_score`，可買進狀態欄位叫 `state`（`ACTIONABLE_DAY1`／`MANUAL_REVIEW`／`WATCH_ONLY`／`REJECTED` 這類），頂層 JSON 的候選陣列叫 `candidates` 而不是 `results`。Step 6 的 `theme-detector` 結構性地不一樣——它篩的是主題，不是個股：頂層是 `themes.all` 陣列，每一筆是 `name`、`heat`（0–100）、`stage`（Emerging 到 Exhausting 五階段）、`confidence`（Low／Medium／High），底下才帶一份 `representative_stocks` 清單當佐證，不是候選本身。
 
-不管哪一種骨架，`swing-opportunity-daily.yaml` 的 `manual_review` 把話講死：這是候選生成，不是訊號。分數再高、狀態再理想，都只代表這支腳本認為值得往下看；第 7 步的週線人工複核，才是真正決定留下誰的那一關。
+不管哪一種骨架，`swing-opportunity-daily.yaml` 的 `manual_review` 立場一致：這是候選生成，不是訊號。分數再高、狀態再理想，都只代表這支腳本認為值得往下看；第 7 步的週線人工複核，才是真正決定留下誰的那一關。
 
 ## 收尾
 
