@@ -6,7 +6,7 @@
 
 ## 方法論
 
-把三章併進同一次執行，改變的不只是操作方式，是判決怎麼被記帳。`revision_loop_rules.md` 訂的是累加制：`PASS` 與 `REJECT` 名單只進不出——`iter_0` 判成 `PASS` 的草稿，就算 `iter_1` 真的跑起來也不會被重新送審；`iter_0` 判成 `REJECT` 的草稿同樣不會再被碰。唯一流向下一輪的只有 `REVISE`。修正本身也是規則驅動：`apply_revisions` 認得三種指示——「Reduce entry conditions」對應只留前五條進場條件，「Add volume filter」對應在條件裡補上 `avg_volume > 500000`，「Round precise thresholds」對應把條件裡的小數門檻四捨五入成整數；修完之後 `variant` 與 `export_ready_v1` 原樣不動，等下一輪重新判。這個迴圈的上限，`orchestrate_edge_pipeline.py` 寫死在常數 `MAX_REVIEW_ITERATIONS = 2`；`--max-review-iterations` 只是把這個預設值開放成可調參數。
+把三章併進同一次執行，改變的不只是操作方式，是判決怎麼被記帳。`revision_loop_rules.md` 訂的是累加制：`PASS` 與 `REJECT` 名單只進不出——`reviews_iter_0` 判成 `PASS` 的草稿，就算 `reviews_iter_1` 真的跑起來也不會被重新送審；`reviews_iter_0` 判成 `REJECT` 的草稿同樣不會再被碰。唯一流向下一輪的只有 `REVISE`。修正本身也是規則驅動：`apply_revisions` 認得三種指示——「Reduce entry conditions」對應只留前五條進場條件，「Add volume filter」對應在條件裡補上 `avg_volume > 500000`，「Round precise thresholds」對應把條件裡的小數門檻四捨五入成整數；修完之後 `variant` 與 `export_ready_v1` 原樣不動，等下一輪重新判。這個迴圈的上限，`orchestrate_edge_pipeline.py` 寫死在常數 `MAX_REVIEW_ITERATIONS = 2`；`--max-review-iterations` 只是把這個預設值開放成可調參數。
 
 兩輪都過不了的 `REVISE` 草稿，走的是一條寫死的退路：`downgrade_to_research_probe` 把 `variant` 改寫成 `research_probe`，`export_ready_v1` 同步撥成 `false`，`draft_id` 記進一份 downgraded 清單——這不是淘汰，是把它從「等著被匯出的候選」改記成「等著被回頭研究的線索」，仍然留在輸出目錄裡，只是不再往匯出那一步走。
 
@@ -62,5 +62,6 @@ flowchart TD
 - [`skills/stockbee-20pct-study/SKILL.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/stockbee-20pct-study/SKILL.md)
 - [`skills/stockbee-20pct-study/references/methodology.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/stockbee-20pct-study/references/methodology.md)
 - [`skills/stockbee-20pct-study/references/catalyst_taxonomy.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/stockbee-20pct-study/references/catalyst_taxonomy.md)
+- [`skills/stockbee-20pct-study/references/cohort_mining_rules.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/stockbee-20pct-study/references/cohort_mining_rules.md)
 - [`skills/edge-signal-aggregator/SKILL.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/edge-signal-aggregator/SKILL.md)
 - [`skills/edge-signal-aggregator/references/signal-weighting-framework.md`](https://github.com/tradermonty/claude-trading-skills/blob/main/skills/edge-signal-aggregator/references/signal-weighting-framework.md)

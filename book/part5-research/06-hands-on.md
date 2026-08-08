@@ -22,7 +22,7 @@ python3 skills/edge-candidate-agent/scripts/auto_detect_candidates.py \
   --output-dir reports/edge_candidate_auto \
   --top-n 10
 ```
-`--output-dir` 不傳，預設就是 `reports/edge_candidate_auto`，跟 SKILL.md 的 Quick Commands 一致。
+`--output-dir` 不傳，預設就是 `reports/edge_candidate_auto`，跟 `SKILL.md` 的 Quick Commands 一致。
 
 ```bash
 python3 skills/edge-strategy-reviewer/scripts/review_strategy_drafts.py \
@@ -68,7 +68,7 @@ reviews:
 ```
 三筆判決印證了 5.3 那條硬規則：`research_probe` 那筆 `confidence_score` 有 59 分，換算成加權平均不算低，但 `thesis` 是空字串，C1 直接判 `fail`——一票就把總分否決成 `REJECT`，跟另外兩筆分數高低無關。`conservative` 那筆沒有任何一項 `fail`，只是 C1（thesis 太籠統）、C3（估計年度機會僅 18 次）、C8（只有一條 invalidation signal）各拿了 `warn`，加權後落在 70 分門檻之下，判 `REVISE`；只有 `core` 那筆同時過了 70 分門檻、沒背著任何 `fail`，判 `PASS`，也是三筆裡唯一 `export_eligible: true` 的一份。
 
-`pipeline_run_manifest.json` 的形狀，同一批草稿改用 `--review-only` 跑（同樣是本章實跑結果，非重建）：`stages` 底下只有 `review_loop` 與 `export` 兩截——`review_loop` 記 `passed_ids`／`rejected_ids`／`downgraded_ids` 三份清單，`conservative` 那筆兩輪都過不了 `REVISE`，被記進 `downgraded_ids`；`export` 底下列 `exported` 與 `skipped_not_eligible` 兩個陣列，這裡只有 `core` 那一個 candidate id 進了前者。改成全流程執行，`stages` 前面還會多出 `hints`／`concepts`／`drafts` 三截，各自只記 `status` 與輸出路徑——這部分 SKILL.md、`pipeline_flow.md` 都沒附完整範例，是本章依實跑結果整理，不是官方文件直接列出的樣本。
+`pipeline_run_manifest.json` 的形狀，同一批草稿改用 `--review-only` 跑（同樣是本章實跑結果，非重建）：`stages` 底下只有 `review_loop` 與 `export` 兩截——`review_loop` 記 `passed_ids`／`rejected_ids`／`downgraded_ids` 三份清單（各自還帶一個同名的 `passed_count`／`rejected_count`／`downgraded_count` 伴生計數欄位），`conservative` 那筆兩輪都過不了 `REVISE`，被記進 `downgraded_ids`；`export` 底下列 `exported` 與 `skipped_not_eligible` 兩個陣列，這裡只有 `core` 那一個 candidate id 進了前者。改成全流程執行，`stages` 前面還會多出 `hints`／`concepts`／`drafts` 三截，各自只記 `status` 與輸出路徑——這部分 `SKILL.md`、`pipeline_flow.md` 都沒附完整範例，是本章依實跑結果整理，不是官方文件直接列出的樣本。
 
 `conservative` 那筆兩輪的完整過程也一併實跑過：`reviews_iter_0` 判 `REVISE`，`revision_loop_rules.md`（5.4 引過）講的 `apply_revisions` 只認得三種修正指示——精簡進場條件、補流動性篩選、四捨五入精確門檻；這份草稿實際拿到的三條建議是補因果機制、放寬樣本限制、補一條 invalidation signal，沒有一條對得上，`apply_revisions` 因此原樣放行，`reviews_iter_1` 重跑出同一組分數，仍是 `REVISE`，兩輪用盡才落進 `downgraded_ids`。規則寫死能修的三種情況，修不到的照樣空轉兩輪才降級，不是跳過。
 
