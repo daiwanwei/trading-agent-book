@@ -2,6 +2,7 @@
 
 - [首頁：這本書在說什麼](README.md)
 - [序章：一個 AI 交易 Agent 的一週](prologue/agent-week.md)
+- [導讀：怎麼讀一個 skill，以及 agent 的角色](orientation/how-to-read-skills.md)
 
 ## 第一部　市場狀態──今天能不能做？
 
