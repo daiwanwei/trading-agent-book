@@ -18,6 +18,7 @@
 
 ## M4 上游觀察（供回報上游）
 
+- [ ] `skills/exposure-coach` 的 `--theme` 輸入接不上 `theme-detector` 的輸出：`calculate_exposure.py` 的 `extract_theme_score()` 只認頂層的 `theme_score` 或 `theme_strength` 兩個欄位，但 `theme_detector.py` 產出的 JSON 頂層是 `themes`／`industry_rankings`／`sector_uptrend`／`summary` 等，兩個欄位都不存在。結果是即使把 theme 報告傳給 `--theme`，該分項仍被算成缺漏（實測後 `inputs_missing` 依然含 `theme`），`WEIGHTS` 裡分配給它的 5% 永遠拿不到。修法有兩種：`theme-detector` 在頂層補一個 `theme_score`（其 `summary` 已有 `bullish_count`／`bearish_count` 可換算），或 `extract_theme_score()` 改讀既有結構。同一份 `WEIGHTS` 裡的 `sector` 5% 也有類似問題，但成因不同——`sector-analyst` 是吃圖表截圖的人工分析 skill，本來就沒有可自動產出的 JSON
 - [ ] `skills/signal-postmortem/SKILL.md` 第 36 行左右宣稱沒有 API key 時仍可用 `--exit-price`／`--exit-date` 手動記錄結果，但 `postmortem_recorder.py` 的手動路徑把 `realized_returns` 傳成空字典，`classify_outcome()` 讀到的 5 日報酬永遠是 0.0，手動記錄的 `outcome_category` 因此恆定判成 `NEUTRAL`，不會反映真實輸入的出場價
 - [ ] `skills/edge-hint-extractor/references/hints_schema.md` 的 Field Notes 寫 `preferred_entry_family` 只能是 `pivot_breakout` 或 `gap_up_continuation`（2 個），但同一個 skill 的 `build_hints.py` 的 `SUPPORTED_ENTRY_FAMILIES` 已經是 4 個（多了 `panic_reversal`、`news_reaction`），連腳本自己生成的範例 hint 都已經在用這兩個新值
 - [ ] `skills/edge-strategy-reviewer/references/review_criteria.md` 的 C7 `EXPORTABLE_FAMILIES` 仍寫兩個值，`review_strategy_drafts.py` 的 `DEFAULT_EXPORTABLE_FAMILIES` 已經是四個；另外 C1 的 fail 門檻文件寫「少於 5 個字」，程式碼實際是 `len(words) < 3`，C2／C3 的 pass 分數文件寫死 80，程式碼其實是連續分級（60、80、90 等級距），建議一併核對用語與門檻是否同步
